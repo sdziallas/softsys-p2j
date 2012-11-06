@@ -167,6 +167,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         for target in node.targets:
             self.write(target, ' = ')
         self.visit(node.value)
+		self.write(';')
 
     def visit_AugAssign(self, node):
         self.statement(node, node.target, get_binop(node.op, ' %s= '), node.value)
