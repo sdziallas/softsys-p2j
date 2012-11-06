@@ -152,8 +152,18 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     # Statements
 
+    def check_Type(self, node):
+        ValueType = type(ast.literal_eval(node.value))
+        if ValueType == int:
+            self.write('int ')
+        elif ValueType == float:
+            self.write('float ')
+        elif ValueType == str:
+            self.write('string ')
+
     def visit_Assign(self, node):
         self.newline(node)
+		self.check_Type(node)
         for target in node.targets:
             self.write(target, ' = ')
         self.visit(node.value)
