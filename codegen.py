@@ -9,6 +9,10 @@ is distributed under the BSD license.
 It was derived from a modified version found here:
 
     https://gist.github.com/1250562
+
+This version is being adopted for a Python to Java
+translator for the Software Systems course at Olin College.
+
 """
 
 import ast
