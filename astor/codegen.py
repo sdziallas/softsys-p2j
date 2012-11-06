@@ -101,8 +101,10 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def else_body(self, elsewhat):
         if elsewhat:
-            self.write('\n', 'else:')
+            self.write('\n', 'else{')
             self.body(elsewhat)
+        self.newline(elsewhat)
+        self.write('}')
 
     def body_or_else(self, node):
         self.body(node.body)
@@ -186,13 +188,15 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def visit_FunctionDef(self, node):
         self.decorators(node, 1)
-        self.statement(node, 'def %s(' % node.name)
+        self.statement(node, 'public void %s(' % node.name)
         self.signature(node.args)
         self.write(')')
         if getattr(node, 'returns', None) is not None:
             self.write(' ->', node.returns)
-        self.write(':')
+        self.write('{')
         self.body(node.body)
+        self.newline(node)
+        self.write('}')
 
     def visit_ClassDef(self, node):
         have_args = []
@@ -218,17 +222,22 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.body(node.body)
 
     def visit_If(self, node):
-        self.statement(node, 'if ', node.test, ':')
+        self.statement(node, 'if ', node.test, '{')
         self.body(node.body)
+        self.newline(node)
+        self.write('}')
         while True:
             else_ = node.orelse
             if len(else_) == 1 and isinstance(else_[0], ast.If):
                 node = else_[0]
-                self.write('\n', 'elif ', node.test, ':')
+                self.write('\n', 'else if ', node.test, '{')
                 self.body(node.body)
+                self.newline(node)
+                self.write('}')
             else:
                 self.else_body(else_)
                 break
+
 
     def visit_For(self, node):
         self.statement(node, 'for ', node.target, ' in ', node.iter, ':')
@@ -341,12 +350,16 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.conditional_write(write_comma, '*', node.starargs)
         self.conditional_write(write_comma, '**', node.kwargs)
         self.write(')')
-
+        self.write(';')
+		
     def visit_Name(self, node):
-        self.write(node.id)
+        if node.id == "printf":
+			self.write("System.out.println")
 
     def visit_Str(self, node):
-        self.write(repr(node.s))
+        self.write('"')
+        self.write(node.s)
+        self.write('"')
 
     def visit_Bytes(self, node):
         self.write(repr(node.s))
