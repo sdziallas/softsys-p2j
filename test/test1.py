@@ -13,8 +13,10 @@ def TestMe1(x, y, width=10, foo=None):
 
 def SimpleTest():
     i = 1.2
+    j = 4
     if i==1:
-        print 'A match!'
+        print 'A match! %i %j' % i, j
+    print 'A match!'
 
 def IfElseTest():
     i = 5
@@ -25,7 +27,7 @@ def IfElseTest():
     else:
         print "something else" 
     
-func_ast = astor.codetoast(IfElseTest)
+func_ast = astor.codetoast(SimpleTest)
 print(astor.dump(func_ast))
 print('\n')
 print(astor.to_source(func_ast))
