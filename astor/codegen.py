@@ -258,12 +258,14 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def visit_Print(self, node):
         # XXX: python 2.6 only
-        self.statement(node, 'print ')
+		# Modified to write 'system.out.println' instead of 'print'
+        self.statement(node, 'system.out.println(')
         values = node.values
         if node.dest is not None:
             self.write(' >> ')
             values = [node.dest] + node.values
         self.comma_list(values, not node.nl)
+        self.write(");");
 
     def visit_Delete(self, node):
         self.statement(node, 'del ')

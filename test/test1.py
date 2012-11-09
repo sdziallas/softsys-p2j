@@ -19,9 +19,11 @@ def SimpleTest():
 def IfElseTest():
     i = 5
     if i == 5:
-        print("number 5")
+        print "number 5 %i" % i
+    elif i == 3:
+		print "number 3"     
     else:
-        print("something else")        
+        print "something else" 
     
 func_ast = astor.codetoast(IfElseTest)
 print(astor.dump(func_ast))
