@@ -259,7 +259,7 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_Print(self, node):
         # XXX: python 2.6 only
 		# Modified to write 'system.out.println' instead of 'print'
-        self.statement(node, 'system.out.println(')
+        self.statement(node, 'System.out.println(')
         values = node.values
         if node.dest is not None:
             self.write(' >> ')
