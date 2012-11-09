@@ -264,8 +264,6 @@ class SourceGenerator(ExplicitNodeVisitor):
         if node.dest is not None:
             self.write(' >> ')
             values = [node.dest] + node.values
-
-		
         self.comma_list(values, not node.nl)
         self.write(");");
 
@@ -392,10 +390,10 @@ class SourceGenerator(ExplicitNodeVisitor):
     @enclose('()')
     def visit_BinOp(self, node): 
         # Must remember to handle % when used for mathematical functions, not just string formatting     
-		#if (get_binop(node.op, ' %s ') == ' % '):
-		#	self.write(node.left, ' ', node.right)
-        #else:
-        self.write(node.left, get_binop(node.op, ' %s '), node.right)
+        if (get_binop(node.op, ' %s ') == ' % '):
+            self.write(node.left, ' , ', node.right)
+        else:
+            self.write(node.left, get_binop(node.op, ' %s '), node.right)
 
     @enclose('()')
     def visit_BoolOp(self, node):
