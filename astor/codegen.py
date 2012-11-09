@@ -353,13 +353,10 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.write(';')
 		
     def visit_Name(self, node):
-        if node.id == "printf":
-			self.write("System.out.println")
+        self.write(node.id);
 
     def visit_Str(self, node):
-        self.write('"')
-        self.write(node.s)
-        self.write('"')
+        self.write(repr(node.s))
 
     def visit_Bytes(self, node):
         self.write(repr(node.s))
