@@ -103,8 +103,8 @@ class SourceGenerator(ExplicitNodeVisitor):
         if elsewhat:
             self.write('\n', 'else{')
             self.body(elsewhat)
-        self.newline(elsewhat)
-        self.write('}')
+            self.newline(elsewhat)
+            self.write('}')
 
     def body_or_else(self, node):
         self.body(node.body)
