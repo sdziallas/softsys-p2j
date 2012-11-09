@@ -11,13 +11,19 @@ def TestMe1(x, y, width=10, foo=None):
     a.b = c.d + x.y.z.a.b
     m.n = q = (w.w, x.x.y.y) = f(x.x.y.z)
 
-def TestMe2():
+def SimpleTest():
     i = 1.2
     if i==1:
         print 'A match!'
-        
+
+def IfElseTest():
+    i = 5
+    if i == 5:
+        print("number 5")
+    else:
+        print("something else")        
     
-func_ast = astor.codetoast(TestMe2)
+func_ast = astor.codetoast(IfElseTest)
 print(astor.dump(func_ast))
 print('\n')
 print(astor.to_source(func_ast))
