@@ -13,6 +13,10 @@ def TestMe1(x, y, width=10, foo=None):
 
 def TestMe2():
     i = 1.2
+    if i==1:
+        print 'A match!'
+        
+    
 func_ast = astor.codetoast(TestMe2)
 print(astor.dump(func_ast))
 print('\n')
