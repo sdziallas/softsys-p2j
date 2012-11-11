@@ -357,8 +357,12 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_Name(self, node):
         self.write(node.id);
 
+    # Change self.write(repr(node.s)) to the code below
+    # in order to get "" instead of ''
     def visit_Str(self, node):
-        self.write(repr(node.s))
+        self.write('"')
+        self.write(node.s)
+        self.write('"')
 
     def visit_Bytes(self, node):
         self.write(repr(node.s))
@@ -387,7 +391,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         for key, value in zip(node.keys, node.values):
             self.write(key, ': ', value, ', ')
 
-    @enclose('()')
+    # Take @enclose('()') in order to have only one pair of parentheses
     def visit_BinOp(self, node): 
         # Must remember to handle % when used for mathematical functions, not just string formatting     
         if (get_binop(node.op, ' %s ') == ' % '):
