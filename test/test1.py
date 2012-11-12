@@ -11,6 +11,9 @@ def TestMe1(x, y, width=10, foo=None):
     a.b = c.d + x.y.z.a.b
     m.n = q = (w.w, x.x.y.y) = f(x.x.y.z)
 
+def __privatefunc():
+	print "Hello"
+
 def SimpleTest():
     i = 1.2
     j = 4
@@ -27,7 +30,8 @@ def IfElseTest():
     else:
         print "something else" 
     
-func_ast = astor.codetoast(SimpleTest)
+func_ast = astor.codetoast(__privatefunc)
+
 print(astor.dump(func_ast))
 print('\n')
-print(astor.to_source(func_ast))
+print(astor.to_source(func_ast, __privatefunc.__name__))
