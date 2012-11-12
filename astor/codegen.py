@@ -16,10 +16,15 @@ translator for the Software Systems course at Olin College.
 """
 
 import ast
-
+import string
 from astor.misc import ExplicitNodeVisitor
 from astor.misc import get_boolop, get_binop, get_cmpop, get_unaryop
 
+def is_public(name):
+    if name[0:2] == '__' or name [0:1] == '_':
+	    return False
+    else:
+        return True
 
 def to_source(node, fname, indent_with=' ' * 4, add_line_information=False):
     """This function can convert a node tree into java sourcecode.
@@ -34,7 +39,6 @@ def to_source(node, fname, indent_with=' ' * 4, add_line_information=False):
     Each level of indentation is replaced with `indent_with`.  Per default this
     parameter is equal to four spaces as suggested by PEP 8, but it might be
     adjusted to match the application's styleguide.
-
     If `add_line_information` is set to `True` comments for the line numbers
     of the nodes are added to the output.  This can be used to spot wrong line
     number information of statement nodes.
@@ -42,12 +46,18 @@ def to_source(node, fname, indent_with=' ' * 4, add_line_information=False):
 	fname will be put into the public class declaration at the very beginning of the translated code so that the java sourcecode compiles nicely.
     """
 
-	
     generator = SourceGenerator(indent_with, add_line_information)
-    generator.write("public class "+ fname + "{");
-    generator.indentation += 1;
+
+    if is_public(fname):
+        generator.write("public class "+ fname + "{")
+    else:
+        # Does not currently handle _names or __names differently.
+        # Assumes __names - formatted variables.
+		generator.write("private class " + fname[2:] + "{")
+
+    generator.indentation += 1
     generator.visit(node)
-    generator.indentation -= 1;
+    generator.indentation -= 1
     generator.write("\n}");
     return ''.join(str(s) for s in generator.result)
 
@@ -104,7 +114,6 @@ class SourceGenerator(ExplicitNodeVisitor):
     def body(self, statements):
         self.indentation += 1
         for stmt in statements:
-            print stmt
             self.visit(stmt)
         self.indentation -= 1
 
@@ -168,7 +177,9 @@ class SourceGenerator(ExplicitNodeVisitor):
         if ValueType == int:
             self.write('int ')
         elif ValueType == float:
-            self.write('float ')
+			# In Java, 'float' requires 'f' to appear after the number,
+			# but 'double' does not.
+            self.write('double ')
         elif ValueType == str:
             self.write('string ')
 
@@ -197,7 +208,10 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def visit_FunctionDef(self, node):
         self.decorators(node, 1)
-        self.statement(node, 'public void %s(' % node.name)
+        if is_public(node.name):
+	        self.statement(node, 'public void %s(' % node.name)
+        else:
+            self.statement(node, 'private void %s(' % node.name[2:])
         self.signature(node.args)
         self.write(')')
         if getattr(node, 'returns', None) is not None:
@@ -402,7 +416,7 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     # Take @enclose('()') in order to have only one pair of parentheses
     def visit_BinOp(self, node): 
-        # Must remember to handle % when used for mathematical functions, not just string formatting     
+        # Must remember to handle % when used for mathematical expressions, not just string formatting     
         if (get_binop(node.op, ' %s ') == ' % '):
             self.write(node.left, ', ', node.right)
         else:

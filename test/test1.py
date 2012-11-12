@@ -2,6 +2,7 @@
 
 import sys
 import os
+import string
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import astor
 
@@ -14,7 +15,7 @@ def TestMe1(x, y, width=10, foo=None):
 def __privatefunc():
 	print "Hello"
 
-def SimpleTest():
+def __SimpleTest():
     i = 1.2
     j = 4
     if i==1:
@@ -29,9 +30,9 @@ def IfElseTest():
 		print "number 3"     
     else:
         print "something else" 
-    
-func_ast = astor.codetoast(__privatefunc)
+
+func_ast = astor.codetoast(__SimpleTest)
 
 print(astor.dump(func_ast))
-print('\n')
-print(astor.to_source(func_ast, __privatefunc.__name__))
+print(__SimpleTest.__name__ + '\n')
+print(astor.to_source(func_ast, __SimpleTest.__name__))
