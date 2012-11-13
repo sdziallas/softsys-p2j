@@ -31,8 +31,12 @@ def IfElseTest():
     else:
         print "something else" 
 
-func_ast = astor.codetoast(__SimpleTest)
+
+#Only change the function you are testing here
+myfunc = __SimpleTest
+
+func_ast = astor.codetoast(myfunc)
 
 print(astor.dump(func_ast))
 print(__SimpleTest.__name__ + '\n')
-print(astor.to_source(func_ast, __SimpleTest.__name__))
+print(astor.to_source(func_ast, myfunc.__name__))
