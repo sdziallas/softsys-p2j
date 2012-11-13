@@ -48,6 +48,7 @@ def to_source(node, fname, indent_with=' ' * 4, add_line_information=False):
 
     generator = SourceGenerator(indent_with, add_line_information)
 
+
     if is_public(fname):
         generator.write("public class "+ fname + "{")
     else:
