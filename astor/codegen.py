@@ -48,6 +48,7 @@ def to_source(node, fname, indent_with=' ' * 4, add_line_information=False):
 
     generator = SourceGenerator(indent_with, add_line_information)
 
+
     if is_public(fname):
         generator.write("public class "+ fname + "{")
     else:
@@ -162,11 +163,13 @@ class SourceGenerator(ExplicitNodeVisitor):
         for decorator in node.decorator_list:
             self.statement(decorator, '@', decorator)
 
+    # Change in order to get only the first string
     def comma_list(self, items, trailing=False):
-        for idx, item in enumerate(items):
-            if idx:
-                self.write(', ')
-            self.visit(item)
+        self.visit(items[0])
+        #for idx, item in enumerate(items):
+        #    if idx:
+        #        self.write(', ')
+        #    self.visit(item)
         if trailing:
             self.write(',')
 
@@ -175,17 +178,18 @@ class SourceGenerator(ExplicitNodeVisitor):
     def check_Type(self, node):
         ValueType = type(ast.literal_eval(node.value))
         if ValueType == int:
-            self.write('int ')
+            return 'int '
         elif ValueType == float:
 			# In Java, 'float' requires 'f' to appear after the number,
 			# but 'double' does not.
-            self.write('double ')
+            return 'double '
         elif ValueType == str:
-            self.write('string ')
+            return 'string '
 
     def visit_Assign(self, node):
         self.newline(node)
-        self.check_Type(node)
+        node_type = self.check_Type(node)
+        self.write(node_type)
         for target in node.targets:
             self.write(target, ' = ')
         self.visit(node.value)
@@ -335,6 +339,7 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_Return(self, node):
         self.statement(node, 'return')
         self.conditional_write(' ', node.value)
+        self.write(';')
 
     def visit_Break(self, node):
         self.statement(node, 'break')
@@ -383,9 +388,26 @@ class SourceGenerator(ExplicitNodeVisitor):
     # Change self.write(repr(node.s)) to the code below
     # in order to get "" instead of ''
     def visit_Str(self, node):
-        self.write('"')
-        self.write(node.s)
-        self.write('"')
+        #self.write('"')
+        #self.write(node.s)
+        #self.write('"')
+        found = False
+        string = '"'
+        for char in node.s:
+          if found == True and char == ' ':
+            found = False
+            string += ' + "'
+          elif char == '%' and found == False:
+            string += '" + '
+            found = True
+          else:
+            string += char
+        if found == False:
+          string += '"'
+        string = string.replace(' + ""', '')
+        string = string.replace('"" + ', '')
+        self.write(string)
+
 
     def visit_Bytes(self, node):
         self.write(repr(node.s))
@@ -418,7 +440,8 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_BinOp(self, node): 
         # Must remember to handle % when used for mathematical expressions, not just string formatting     
         if (get_binop(node.op, ' %s ') == ' % '):
-            self.write(node.left, ', ', node.right)
+            self.write(node.left)
+            #self.write(node.left, '+ ', node.right)
         else:
             self.write(node.left, get_binop(node.op, ' %s '), node.right)
 
