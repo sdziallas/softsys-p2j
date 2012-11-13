@@ -178,17 +178,18 @@ class SourceGenerator(ExplicitNodeVisitor):
     def check_Type(self, node):
         ValueType = type(ast.literal_eval(node.value))
         if ValueType == int:
-            self.write('int ')
+            return 'int '
         elif ValueType == float:
 			# In Java, 'float' requires 'f' to appear after the number,
 			# but 'double' does not.
-            self.write('double ')
+            return 'double '
         elif ValueType == str:
-            self.write('string ')
+            return 'string '
 
     def visit_Assign(self, node):
         self.newline(node)
-        self.check_Type(node)
+        node_type = self.check_Type(node)
+        self.write(node_type)
         for target in node.targets:
             self.write(target, ' = ')
         self.visit(node.value)
@@ -338,6 +339,7 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_Return(self, node):
         self.statement(node, 'return')
         self.conditional_write(' ', node.value)
+        self.write(';')
 
     def visit_Break(self, node):
         self.statement(node, 'break')

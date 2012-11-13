@@ -27,13 +27,14 @@ def IfElseTest():
     if i == 5:
         print "number 5 %i" % i
     elif i == 3:
-		print "number 3"     
+	print "number 3"     
     else:
-        print "something else" 
+        print "something else"
+    return i
 
 
 #Only change the function you are testing here
-myfunc = __SimpleTest
+myfunc = IfElseTest
 
 func_ast = astor.codetoast(myfunc)
 
