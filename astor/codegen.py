@@ -162,11 +162,13 @@ class SourceGenerator(ExplicitNodeVisitor):
         for decorator in node.decorator_list:
             self.statement(decorator, '@', decorator)
 
+    # Change in order to get only the first string
     def comma_list(self, items, trailing=False):
-        for idx, item in enumerate(items):
-            if idx:
-                self.write(', ')
-            self.visit(item)
+        self.visit(items[0])
+        #for idx, item in enumerate(items):
+        #    if idx:
+        #        self.write(', ')
+        #    self.visit(item)
         if trailing:
             self.write(',')
 
@@ -383,9 +385,26 @@ class SourceGenerator(ExplicitNodeVisitor):
     # Change self.write(repr(node.s)) to the code below
     # in order to get "" instead of ''
     def visit_Str(self, node):
-        self.write('"')
-        self.write(node.s)
-        self.write('"')
+        #self.write('"')
+        #self.write(node.s)
+        #self.write('"')
+        found = False
+        string = '"'
+        for char in node.s:
+          if found == True and char == ' ':
+            found = False
+            string += ' + "'
+          elif char == '%' and found == False:
+            string += '" + '
+            found = True
+          else:
+            string += char
+        if found == False:
+          string += '"'
+        string = string.replace(' + ""', '')
+        string = string.replace('"" + ', '')
+        self.write(string)
+
 
     def visit_Bytes(self, node):
         self.write(repr(node.s))
@@ -418,7 +437,8 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_BinOp(self, node): 
         # Must remember to handle % when used for mathematical expressions, not just string formatting     
         if (get_binop(node.op, ' %s ') == ' % '):
-            self.write(node.left, ', ', node.right)
+            self.write(node.left)
+            #self.write(node.left, '+ ', node.right)
         else:
             self.write(node.left, get_binop(node.op, ' %s '), node.right)
 
