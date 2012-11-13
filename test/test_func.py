@@ -28,5 +28,3 @@ def IfElseTest():
     else:
         print "something else"
     return i
-
->>>>>>> aa5add34b45b61992c38f3c1ccd2c5b75ecc0d2f:test/test1.py
