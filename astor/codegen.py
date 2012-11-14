@@ -212,10 +212,19 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def visit_FunctionDef(self, node):
         self.decorators(node, 1)
+        
+        # determine the function's return type (only works for int/double/str)
+        # TODO: get this working for returned variables and expressions
+        for ast_object in node.body:
+            if 'Return' in repr(ast_object):
+                return_type = self.check_Type(ast_object)
+            else:
+                return_type = 'void '
+                
         if is_public(node.name):
-	        self.statement(node, 'public void %s(' % node.name)
+	        self.statement(node, 'public ' + return_type + '%s(' % node.name)
         else:
-            self.statement(node, 'private void %s(' % node.name[2:])
+            self.statement(node, 'private ' + return_type + '%s(' % node.name[2:])
         self.signature(node.args)
         self.write(')')
         if getattr(node, 'returns', None) is not None:

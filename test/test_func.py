@@ -27,4 +27,4 @@ def IfElseTest():
         print "number 3"     
     else:
         print "something else"
-    return i
+    return 1
