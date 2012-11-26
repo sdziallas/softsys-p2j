@@ -172,6 +172,30 @@ class SourceGenerator(ExplicitNodeVisitor):
         #    self.visit(item)
         if trailing:
             self.write(',')
+            
+    # Change in order to get only the first string
+    def comma_list_print(self, items, trailing=False):
+        #print 'COMMA'
+        moduleDetected = False
+        firstItem = True
+        for idx, item in enumerate(items):
+            #print 'ITEM', type(item)
+            if type(item) is ast.BinOp:
+              #print item.op
+              #if item.op == 'Mod':
+              #print 'MODULE DETECTED'
+              moduleDetected = True
+            if moduleDetected:
+              if firstItem:
+                self.write(item)
+                firstItem = False
+            else:
+              if firstItem:
+                self.write(item)
+                firstItem = False
+              else:
+                self.write(' + ')
+                self.visit(item)
 
     # Statements
 
@@ -300,7 +324,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         if node.dest is not None:
             self.write(' >> ')
             values = [node.dest] + node.values
-        self.comma_list(values, not node.nl)
+        self.comma_list_print(values, not node.nl)
         self.write(");");
 
     def visit_Delete(self, node):
@@ -397,7 +421,7 @@ class SourceGenerator(ExplicitNodeVisitor):
     # Change self.write(repr(node.s)) to the code below
     # in order to get "" instead of ''
     def visit_Str(self, node):
-        #self.write('"')
+       #self.write('"')
         #self.write(node.s)
         #self.write('"')
         found = False
@@ -416,7 +440,6 @@ class SourceGenerator(ExplicitNodeVisitor):
         string = string.replace(' + ""', '')
         string = string.replace('"" + ', '')
         self.write(string)
-
 
     def visit_Bytes(self, node):
         self.write(repr(node.s))
@@ -447,7 +470,7 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     # Take @enclose('()') in order to have only one pair of parentheses
     def visit_BinOp(self, node): 
-        # Must remember to handle % when used for mathematical expressions, not just string formatting     
+         # Must remember to handle % when used for mathematical expressions, not just string formatting     
         if (get_binop(node.op, ' %s ') == ' % '):
             self.write(node.left)
             #self.write(node.left, '+ ', node.right)
