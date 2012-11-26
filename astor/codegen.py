@@ -165,11 +165,10 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     # Change in order to get only the first string
     def comma_list(self, items, trailing=False):
-        self.visit(items[0])
-        #for idx, item in enumerate(items):
-        #    if idx:
-        #        self.write(', ')
-        #    self.visit(item)
+        for idx, item in enumerate(items):
+            if idx:
+                self.write(', ')
+            self.visit(item)
         if trailing:
             self.write(',')
             
@@ -473,7 +472,7 @@ class SourceGenerator(ExplicitNodeVisitor):
          # Must remember to handle % when used for mathematical expressions, not just string formatting     
         if (get_binop(node.op, ' %s ') == ' % '):
             self.write(node.left)
-            #self.write(node.left, '+ ', node.right)
+            #self.write(node.left, ', ', node.right)
         else:
             self.write(node.left, get_binop(node.op, ' %s '), node.right)
 
