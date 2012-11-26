@@ -47,3 +47,7 @@ def PrintTest():
   print "The square root of %i is %r" % i, r 
 
   print "the square is ", i
+
+def ReturnTest():
+    i=5
+    return i

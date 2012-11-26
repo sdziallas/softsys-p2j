@@ -237,7 +237,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.decorators(node, 1)
         
         # determine the function's return type (only works for int/double/str)
-        # TODO: get this working for returned variables and expressions
+        # TODO: get this working for returned variables, expressions, and None
         for ast_object in node.body:
             if 'Return' in repr(ast_object):
                 return_type = self.check_Type(ast_object)
