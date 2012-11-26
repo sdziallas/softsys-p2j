@@ -28,3 +28,22 @@ def IfElseTest():
     else:
         print "something else"
     return 1
+
+def PrintTest():
+  i = 1.2
+  var = 'world'
+  j = 4
+  if i==1:
+    print '%i and %j' % i, j
+  print 'A match!'
+  print 'and %var %j_p is'
+  print 'hello %var' % var
+  print "The square root of "
+  print i
+  print i, ' is'
+  print '%i is' % i
+  print " is "
+  print "."
+  print "The square root of %i is %r" % i, r 
+
+  print "the square is ", i
