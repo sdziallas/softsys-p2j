@@ -202,6 +202,7 @@ class SourceGenerator(ExplicitNodeVisitor):
     # Statements
 
     def check_Type(self, node):
+        # TODO: this does not work for things like 10%4
         ValueType = type(ast.literal_eval(node.value))
         print ValueType
         if ValueType == int:
@@ -497,12 +498,19 @@ class SourceGenerator(ExplicitNodeVisitor):
         for key, value in zip(node.keys, node.values):
             self.write(key, ': ', value, ', ')
 
+
     # Take @enclose('()') in order to have only one pair of parentheses
     def visit_BinOp(self, node): 
-         # Must remember to handle % when used for mathematical expressions, not just string formatting     
+        # Must remember to handle % when used for mathematical expressions, not just string formatting
+        # TODO: if the left & right side are type Num, we want to be doing math; otherwise this 
         if (get_binop(node.op, ' %s ') == ' % '):
-            self.write(node.left)
-            #self.write(node.left, ', ', node.right)
+            node_type_left = type(node.left)
+            node_type_right = type(node.left)
+            if node_type_left == ast.Num and node_type_right == ast.Num:
+                self.write(node.left)
+                # self.write(node.left, ', ', node.right)
+            else:
+                self.write(node.left, get_binop(node.op, ' %s '), node.right)
         else:
             self.write(node.left, get_binop(node.op, ' %s '), node.right)
 
