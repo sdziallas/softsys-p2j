@@ -44,7 +44,7 @@ def CallAstor(func_name):
     f = open(filename, 'w')
 
     # activate to print AST again
-    # print(astor.dump(func_ast))
+    print(astor.dump(func_ast))
     print>>f, astor.to_source(func_ast, function.__name__)
 
     return filename

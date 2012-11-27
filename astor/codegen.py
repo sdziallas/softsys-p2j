@@ -255,6 +255,7 @@ class SourceGenerator(ExplicitNodeVisitor):
                     return_type = 'int '
                     incorrect_type = True
             else:
+                incorrect_type = False
                 return_type = 'void '
                 
         if is_public(node.name):

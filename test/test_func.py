@@ -51,3 +51,7 @@ def PrintTest():
 def ReturnTest():
     i=5
     return None
+
+def DictTest():
+    print 'Hello'
+    newDict = {}
