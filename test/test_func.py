@@ -48,6 +48,16 @@ def PrintTest():
 
   print "the square is ", i
 
+def ModTest():
+    i = 10%4
+    print i
+    text = "This is 100% tested."
+    print text
+
 def ReturnTest():
     i=5
-    return i
+    return None
+
+def DictTest():
+    print 'Hello'
+    newDict = {}

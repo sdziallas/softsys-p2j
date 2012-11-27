@@ -20,6 +20,9 @@ import string
 from astor.misc import ExplicitNodeVisitor
 from astor.misc import get_boolop, get_binop, get_cmpop, get_unaryop
 
+global returnsNone
+returnsNone = False
+
 def is_public(name):
     if name[0:2] == '__' or name [0:1] == '_':
 	    return False
@@ -200,7 +203,11 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def check_Type(self, node):
         ValueType = type(ast.literal_eval(node.value))
+<<<<<<< HEAD
         print ValueType
+=======
+
+>>>>>>> 2347fb4409f5480c354dec35682ab29add3f88c7
         if ValueType == int:
             return 'int '
         elif ValueType == float:
@@ -243,14 +250,24 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.generic_visit(node)
 
     def visit_FunctionDef(self, node):
+        global returnsNone
         self.decorators(node, 1)
         
         # determine the function's return type (only works for int/double/str)
         # TODO: get this working for returned variables, expressions, and None
         for ast_object in node.body:
             if 'Return' in repr(ast_object):
-                return_type = self.check_Type(ast_object)
+                try:
+                    return_type = self.check_Type(ast_object)
+                    if return_type == None:
+                        return_type = 'void '
+                        returnsNone = True
+                    incorrect_type = False
+                except:
+                    return_type = 'int '
+                    incorrect_type = True
             else:
+                incorrect_type = False
                 return_type = 'void '
                 
         if is_public(node.name):
@@ -262,6 +279,11 @@ class SourceGenerator(ExplicitNodeVisitor):
         if getattr(node, 'returns', None) is not None:
             self.write(' ->', node.returns)
         self.write('{')
+        if incorrect_type:
+            self.indentation += 1
+            self.newline(node)
+            self.write('// Fix the return type')
+            self.indentation -= 1
         self.body(node.body)
         self.newline(node)
         self.write('}')
@@ -378,9 +400,12 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.statement(node, 'nonlocal ', ', '.join(node.names))
 
     def visit_Return(self, node):
-        self.statement(node, 'return')
-        self.conditional_write(' ', node.value)
-        self.write(';')
+        global returnsNone
+        if not returnsNone:
+            self.statement(node, 'return')
+            self.conditional_write(' ', node.value)
+            self.write(';')
+        returnsNone = False
 
     def visit_Break(self, node):
         self.statement(node, 'break')
