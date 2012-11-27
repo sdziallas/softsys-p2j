@@ -200,6 +200,7 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def check_Type(self, node):
         ValueType = type(ast.literal_eval(node.value))
+        print ValueType
         if ValueType == int:
             return 'int '
         elif ValueType == float:
@@ -207,14 +208,22 @@ class SourceGenerator(ExplicitNodeVisitor):
 			# but 'double' does not.
             return 'double '
         elif ValueType == str:
-            return 'string '
+            return 'String '
+        elif ValueType == list:
+            return 'ArrayList '
 
     def visit_Assign(self, node):
         self.newline(node)
         node_type = self.check_Type(node)
-        self.write(node_type)
-        for target in node.targets:
-            self.write(target, ' = ')
+        if node_type == 'ArrayList ':
+          self.write('ArrayList ')
+          self.write(node.targets[0].id)
+          self.write(' = new ArrayList();')
+          self.newline(node)
+        else:
+          self.write(node_type)
+          for target in node.targets:
+              self.write(target, ' = ')
         self.visit(node.value)
         self.write(';')
 
