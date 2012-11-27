@@ -50,4 +50,4 @@ def PrintTest():
 
 def ReturnTest():
     i=5
-    return i
+    return None
