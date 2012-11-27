@@ -203,11 +203,7 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def check_Type(self, node):
         ValueType = type(ast.literal_eval(node.value))
-<<<<<<< HEAD
         print ValueType
-=======
-
->>>>>>> 2347fb4409f5480c354dec35682ab29add3f88c7
         if ValueType == int:
             return 'int '
         elif ValueType == float:
