@@ -56,4 +56,4 @@ def ModTest():
 
 def ReturnTest():
     i=5
-    return i
+    return None
