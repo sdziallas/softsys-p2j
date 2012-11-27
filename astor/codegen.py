@@ -469,10 +469,16 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     # Take @enclose('()') in order to have only one pair of parentheses
     def visit_BinOp(self, node): 
-         # Must remember to handle % when used for mathematical expressions, not just string formatting     
+        # Must remember to handle % when used for mathematical expressions, not just string formatting
+        # TODO: if the left & right side are type Num, we want to be doing math; otherwise this 
         if (get_binop(node.op, ' %s ') == ' % '):
-            self.write(node.left)
-            #self.write(node.left, ', ', node.right)
+            node_type_left = type(node.left)
+            node_type_right = type(node.left)
+            if node_type_left == ast.Num and node_type_right == ast.Num:
+                self.write(node.left)
+                # self.write(node.left, ', ', node.right)
+            else:
+                self.write(node.left, get_binop(node.op, ' %s '), node.right)
         else:
             self.write(node.left, get_binop(node.op, ' %s '), node.right)
 
