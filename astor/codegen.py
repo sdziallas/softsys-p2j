@@ -240,7 +240,6 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_Assign(self, node):
         # TODO: this is not working for things like 10%4
         self.newline(node)
-        node_type = self.check_Type(node)
         if type(node.value) == ast.List:
             self.write('ArrayList ');
             self.write(node.targets[0].id)
@@ -253,11 +252,18 @@ class SourceGenerator(ExplicitNodeVisitor):
               self.write(node.value.elts[i])
               self.write(');')
         else:
-          self.write(node_type)
-          for target in node.targets:
-              self.write(target, ' = ')
-          self.visit(node.value)
-          self.write(';')
+            try:
+                node_type = self.check_Type(node)
+                self.write(node_type)
+            except:
+                self.write("// FIX TYPE OF ASSIGNED VARIABLE")
+                self.newline(node)
+                self.write("int ")
+            for target in node.targets:
+                self.write(target, ' = ')
+                self.visit(node.value)
+            self.write(';')
+
 
     def visit_AugAssign(self, node):
         self.statement(node, node.target, get_binop(node.op, ' %s= '), node.value)

@@ -59,7 +59,7 @@ def ModTest():
 def ReturnTest(i,j):
     '''Input: int i, int j'''
     '''Output: float'''
-    x = i + j
+    x = "hello" + " goodbye"
     return i - j
 
 def DictTest():
