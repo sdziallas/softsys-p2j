@@ -50,7 +50,8 @@ def to_source(node, fname, indent_with=' ' * 4, add_line_information=False):
     """
 
     generator = SourceGenerator(indent_with, add_line_information)
-
+    generator.write("import java.util.*;")
+    generator.newline()
 
     if is_public(fname):
         generator.write("public class "+ fname + "{")
@@ -240,11 +241,17 @@ class SourceGenerator(ExplicitNodeVisitor):
         # TODO: this is not working for things like 10%4
         self.newline(node)
         node_type = self.check_Type(node)
-        if node_type == 'ArrayList ':
-          self.write('ArrayList ')
-          self.write(node.targets[0].id)
-          self.write(' = new ArrayList();')
-          self.newline(node)
+        if type(node.value) == ast.List:
+            self.write('ArrayList ');
+            self.write(node.targets[0].id)
+            self.write(' = ')
+            self.write('new ArrayList();')
+            for i in range(0,len(node.value.elts)):
+              self.newline(node)
+              self.write(node.targets[0].id)
+              self.write('.add(')
+              self.write(node.value.elts[i])
+              self.write(');')
         else:
           self.write(node_type)
           for target in node.targets:
