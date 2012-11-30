@@ -105,6 +105,23 @@ class SourceGenerator(ExplicitNodeVisitor):
                     self.new_lines = 0
                 self.result.append(item)
 
+    def trans_Expr(self, node, input_output):
+        if input_output == 'input':
+            for stmt in node.body:
+                if 'Expr' in repr(stmt):
+                    if "Input: " in ast.literal_eval(stmt.value):
+                        return_string = ast.literal_eval(stmt.value)
+                        return_string = return_string[7:]
+                        return return_string
+        else:
+            for stmt in node.body:
+                if 'Expr' in repr(stmt):
+                    if "Output: " in ast.literal_eval(stmt.value):
+                        return_string = ast.literal_eval(stmt.value)
+                        return_string = return_string[8:]
+                        return return_string
+
+
     def conditional_write(self, *stuff):
         if stuff[-1] is not None:
             self.write(*stuff)
@@ -156,6 +173,9 @@ class SourceGenerator(ExplicitNodeVisitor):
             if node.vararg is None:
                 self.write(write_comma, '*')
             loop_args(kwonlyargs, node.kw_defaults)
+
+    def write_inputs(self, node):
+        self.write(self.trans_Expr(node, 'input'))
 
     def statement(self, node, *params, **kw):
         self.newline(node)
@@ -251,25 +271,6 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.newline()      
         self.write('*/')
 
-    def trans_Expr(self, node, input_output):
-        if input_output == 'input':
-            for stmt in node.body:
-                if 'Expr' in repr(stmt):
-                    if "Input " in ast.literal_eval(stmt.value):
-                        return_string = ast.literal_eval(stmt.value)
-                        return_string = return_string[7:]
-                        return return_string
-        else:
-            for stmt in node.body:
-                if 'Expr' in repr(stmt):
-                    if "Output: " in ast.literal_eval(stmt.value):
-                        return_string = ast.literal_eval(stmt.value)
-                        return_string = return_string[8:]
-                        return return_string
-
-    
-
-
     def visit_FunctionDef(self, node):
         global returnsNone
         self.decorators(node, 1)
@@ -280,11 +281,15 @@ class SourceGenerator(ExplicitNodeVisitor):
             if 'Return' in repr(ast_object):
                 try:
                     return_type = self.check_Type(ast_object)
+                    # Handles return_type of None
                     if return_type == None:
                         return_type = 'void '
                         returnsNone = True
                     incorrect_type = False
                 except:
+                    # Handles return types of expressions and variables
+                    # The docstring must have "Input: " and "Output: " in 
+                    # different expressions
                     return_type = self.trans_Expr(node,'output') + ' '
                     incorrect_type = True
             else:
@@ -295,7 +300,7 @@ class SourceGenerator(ExplicitNodeVisitor):
 	        self.statement(node, 'public ' + return_type + '%s(' % node.name)
         else:
             self.statement(node, 'private ' + return_type + '%s(' % node.name[2:])
-        self.signature(node.args)
+        self.write_inputs(node)
         self.write(')')
         if getattr(node, 'returns', None) is not None:
             self.write(' ->', node.returns)
