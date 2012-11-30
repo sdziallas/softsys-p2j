@@ -12,9 +12,11 @@ def TestMe(x, y, width=10, foo=None):
     a.b = c.d + x.y.z.a.b
     m.n = q = (w.w, x.x.y.y) = f(x.x.y.z)
 
-def SimpleTest():
-    i = 1.2
-    j = 4
+def SimpleTest(i,j):
+    '''Input: int i, int j'''
+    '''Output: '''
+    # i = 1.2
+    # j = 4
     if i==1:
         print 'A match! %i %j' % i, j
     print 'A match!'
@@ -54,9 +56,10 @@ def ModTest():
     text = "This is 100% tested."
     print text
 
-def ReturnTest():
-    i=5
-    return None
+def ReturnTest(i,j):
+    '''Input: int i, int j'''
+    '''Output: float'''
+    return i - j
 
 def DictTest():
     print 'Hello'

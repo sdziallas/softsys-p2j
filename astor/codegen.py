@@ -244,8 +244,31 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.comma_list(node.names)
 
     def visit_Expr(self, node):
+        self.newline()
+        self.write('/*')
         self.statement(node)
-        self.generic_visit(node)
+        self.generic_visit(node)  
+        self.newline()      
+        self.write('*/')
+
+    def trans_Expr(self, node, input_output):
+        if input_output == 'input':
+            for stmt in node.body:
+                if 'Expr' in repr(stmt):
+                    if "Input " in ast.literal_eval(stmt.value):
+                        return_string = ast.literal_eval(stmt.value)
+                        return_string = return_string[7:]
+                        return return_string
+        else:
+            for stmt in node.body:
+                if 'Expr' in repr(stmt):
+                    if "Output: " in ast.literal_eval(stmt.value):
+                        return_string = ast.literal_eval(stmt.value)
+                        return_string = return_string[8:]
+                        return return_string
+
+    
+
 
     def visit_FunctionDef(self, node):
         global returnsNone
@@ -262,7 +285,7 @@ class SourceGenerator(ExplicitNodeVisitor):
                         returnsNone = True
                     incorrect_type = False
                 except:
-                    return_type = 'int '
+                    return_type = self.trans_Expr(node,'output') + ' '
                     incorrect_type = True
             else:
                 incorrect_type = False
