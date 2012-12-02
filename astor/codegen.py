@@ -107,6 +107,9 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.result.append(item)
 
     def trans_Expr(self, node, input_output):
+        # Translates docstrings to fix the input variable and return variable
+        # types.
+
         if input_output == 'input':
             for stmt in node.body:
                 if 'Expr' in repr(stmt):
@@ -236,6 +239,8 @@ class SourceGenerator(ExplicitNodeVisitor):
             return 'double '
         elif ValueType == str:
             return 'String '
+        elif ValueType == bool:
+            return 'Bool'
         elif ValueType == list:
             return 'ArrayList '
 
@@ -289,13 +294,18 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_FunctionDef(self, node):
         global returnsNone
         self.decorators(node, 1)
-        
-        # determine the function's return type (only works for int/double/str)
-        # TODO: get this working for returned variables, expressions, and None
+
+        return_type = None        
+
+        # determine the function's return type
         for ast_object in node.body:
+            print repr(ast_object)
             if 'Return' in repr(ast_object):
                 try:
+                    # Handles simple case of returning straight integers,
+                    # strings, etc.
                     return_type = self.check_Type(ast_object)
+                    
                     # Handles return_type of None
                     if return_type == None:
                         return_type = 'void '
@@ -307,9 +317,12 @@ class SourceGenerator(ExplicitNodeVisitor):
                     # different expressions
                     return_type = self.trans_Expr(node,'output') + ' '
                     incorrect_type = True
-            else:
-                incorrect_type = False
-                return_type = 'void '
+
+        if return_type == None:
+            # There is no return type
+            print "No return type"
+            incorrect_type = False
+            return_type = 'void '
                 
         if is_public(node.name):
 	        self.statement(node, 'public ' + return_type + '%s(' % node.name)
@@ -477,12 +490,8 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write(', ')
             else:
                 want_comma.append(True)
-        self.write(node.func.value.id)
-        self.write('.')
-        if(node.func.attr == 'append'):
-          self.write('add')
-        else:
-          self.write(node.func.attr)
+
+        self.visit(node.func)
         self.write('(')
         for arg in node.args:
             self.write(write_comma, arg)

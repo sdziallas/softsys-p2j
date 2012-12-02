@@ -53,5 +53,5 @@ test = CheckArgs()
 name = CallAstor(test)
 
 # always remove existing files before committing
-subprocess.call(['javac', name])
+# subprocess.call(['javac', name])
 print "Successfully compiled code."

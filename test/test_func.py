@@ -14,22 +14,22 @@ def TestMe(x, y, width=10, foo=None):
 
 def SimpleTest(i,j):
     '''Input: int i, int j'''
-    '''Output: '''
     # i = 1.2
     # j = 4
     if i==1:
         print 'A match! %i %j' % i, j
     print 'A match!'
 
-def IfElseTest():
-    i = 5
-    if i == 5:
-        print "number 5 %i" % i
-    elif i == 3:
-        print "number 3"     
+def IfElseTest(i, j):
+    if i > j:
+        print "i is greater than %i" % j
+        return True
+    elif i < j:
+        print "i is less than %i" %j
+        return False     
     else:
-        print "something else"
-    return 1
+        print "They're equal"
+        return True
 
 def PrintTest():
   i = 1.2
@@ -59,7 +59,6 @@ def ModTest():
 def ReturnTest(i,j):
     '''Input: int i, int j'''
     '''Output: float'''
-    x = "hello" + " goodbye"
     return i - j
 
 def DictTest():
