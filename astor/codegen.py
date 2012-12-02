@@ -176,7 +176,9 @@ class SourceGenerator(ExplicitNodeVisitor):
             loop_args(kwonlyargs, node.kw_defaults)
 
     def write_inputs(self, node):
-        self.write(self.trans_Expr(node, 'input'))
+        input_vars = self.trans_Expr(node, 'input')
+        if input_vars != None:
+            self.write(input_vars)
 
     def statement(self, node, *params, **kw):
         self.newline(node)
