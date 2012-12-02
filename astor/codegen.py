@@ -475,8 +475,12 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write(', ')
             else:
                 want_comma.append(True)
-
-        self.visit(node.func)
+        self.write(node.func.value.id)
+        self.write('.')
+        if(node.func.attr == 'append'):
+          self.write('add')
+        else:
+          self.write(node.func.attr)
         self.write('(')
         for arg in node.args:
             self.write(write_comma, arg)
