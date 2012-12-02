@@ -110,6 +110,8 @@ class SourceGenerator(ExplicitNodeVisitor):
         # Translates docstrings to fix the input variable and return variable
         # types.
 
+        return_string = ''
+
         if input_output == 'input':
             for stmt in node.body:
                 if 'Expr' in repr(stmt):
@@ -124,7 +126,7 @@ class SourceGenerator(ExplicitNodeVisitor):
                         return_string = ast.literal_eval(stmt.value)
                         return_string = return_string[8:]
                         return return_string
-
+        return return_string
 
     def conditional_write(self, *stuff):
         if stuff[-1] is not None:
@@ -230,7 +232,6 @@ class SourceGenerator(ExplicitNodeVisitor):
     def check_Type(self, node):
         # TODO: this does not work for things like 10%4
         ValueType = type(ast.literal_eval(node.value))
-        print ValueType
         if ValueType == int:
             return 'int '
         elif ValueType == float:
@@ -291,6 +292,24 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.newline()      
         self.write('*/')
 
+    def check_ReturnType(self, ast_object, node):
+        try:
+        # Handles simple case of returning straight integers,
+        # strings, etc.
+            return_type = self.check_Type(ast_object)                    
+            # Handles return_type of None
+            if return_type == None:
+                return_type = 'void '
+                returnsNone = True
+                incorrect_type = False
+        except:
+            # Handles return types of expressions and variables
+            # The docstring must have "Input: " and "Output: " in 
+            # different expressions
+            return_type = self.trans_Expr(node, 'output') + ' '
+            incorrect_type = True
+        return return_type, incorrect_type
+
     def visit_FunctionDef(self, node):
         global returnsNone
         self.decorators(node, 1)
@@ -299,28 +318,16 @@ class SourceGenerator(ExplicitNodeVisitor):
 
         # determine the function's return type
         for ast_object in node.body:
-            print repr(ast_object)
             if 'Return' in repr(ast_object):
-                try:
-                    # Handles simple case of returning straight integers,
-                    # strings, etc.
-                    return_type = self.check_Type(ast_object)
-                    
-                    # Handles return_type of None
-                    if return_type == None:
-                        return_type = 'void '
-                        returnsNone = True
-                    incorrect_type = False
-                except:
-                    # Handles return types of expressions and variables
-                    # The docstring must have "Input: " and "Output: " in 
-                    # different expressions
-                    return_type = self.trans_Expr(node,'output') + ' '
-                    incorrect_type = True
+               return_type, incorrect_type = self.check_ReturnType(ast_object, node)
+            elif 'If' in repr(ast_object):
+                for if_object in ast_object.body:
+                    if 'Return' in repr(if_object):
+                        return_type, incorrect_type = self.check_ReturnType(ast_object, node)
+
 
         if return_type == None:
             # There is no return type
-            print "No return type"
             incorrect_type = False
             return_type = 'void '
                 
@@ -328,7 +335,10 @@ class SourceGenerator(ExplicitNodeVisitor):
 	        self.statement(node, 'public ' + return_type + '%s(' % node.name)
         else:
             self.statement(node, 'private ' + return_type + '%s(' % node.name[2:])
-        self.write_inputs(node)
+
+        if node.args.args != []:
+            self.write_inputs(node)
+
         self.write(')')
         if getattr(node, 'returns', None) is not None:
             self.write(' ->', node.returns)

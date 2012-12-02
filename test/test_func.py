@@ -21,6 +21,8 @@ def SimpleTest(i,j):
     print 'A match!'
 
 def IfElseTest(i, j):
+    '''Input: int i, int j'''
+    '''Output: bool'''
     if i > j:
         print "i is greater than %i" % j
         return True
