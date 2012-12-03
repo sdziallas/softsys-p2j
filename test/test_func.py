@@ -70,8 +70,8 @@ def DictTest():
 def listTest():
     stack = [3, 4, "Hello"]
     stack.append(6)
-   # stack.append(7)
-   # stack
-   # stack.pop()
-   #stack.pop()
-   # stack
+    stack.append(7)
+    print stack
+    stack.pop()
+    stack.pop()
+    print stack

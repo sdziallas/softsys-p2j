@@ -235,13 +235,13 @@ class SourceGenerator(ExplicitNodeVisitor):
         if ValueType == int:
             return 'int '
         elif ValueType == float:
-			# In Java, 'float' requires 'f' to appear after the number,
+			# In Java, 'float' requires 'F' to appear after the number,
 			# but 'double' does not.
             return 'double '
         elif ValueType == str:
             return 'String '
         elif ValueType == bool:
-            return 'Bool'
+            return 'boolean '
         elif ValueType == list:
             return 'ArrayList '
 
@@ -286,11 +286,11 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def visit_Expr(self, node):
         self.newline()
-        self.write('/*')
+        #self.write('/*')
         self.statement(node)
         self.generic_visit(node)  
         self.newline()      
-        self.write('*/')
+        #self.write('*/')
 
     def check_ReturnType(self, ast_object, node):
         try:
@@ -500,15 +500,25 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write(', ')
             else:
                 want_comma.append(True)
-
-        self.visit(node.func)
+        self.write(node.func.value.id)
+        self.write('.')
+        if node.func.attr == 'append':
+          self.write('add')
+        elif node.func.attr == 'pop':
+          self.write('remove')
+        else:
+          self.visit(node.func.attr)
         self.write('(')
-        for arg in node.args:
-            self.write(write_comma, arg)
-        for keyword in node.keywords:
-            self.write(write_comma, keyword.arg, '=', keyword.value)
-        self.conditional_write(write_comma, '*', node.starargs)
-        self.conditional_write(write_comma, '**', node.kwargs)
+        if node.func.attr == 'pop' and node.args.__len__() == 0:
+          self.write(node.func.value.id)
+          self.write('.size()-1')
+        else:
+          for arg in node.args:
+              self.write(write_comma, arg)
+          for keyword in node.keywords:
+              self.write(write_comma, keyword.arg, '=', keyword.value)
+          self.conditional_write(write_comma, '*', node.starargs)
+          self.conditional_write(write_comma, '**', node.kwargs)
         self.write(')')
         self.write(';')
 		
