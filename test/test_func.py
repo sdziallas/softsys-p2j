@@ -58,8 +58,7 @@ def ReturnTest(i,j):
     return i - j
 
 def DictTest():
-    print 'Hello'
-    newDict = {}
+    newDict = {1:2}
     
 def ListTest():
     stack = [3, 4, "Hello"]
