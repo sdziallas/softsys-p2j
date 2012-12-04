@@ -281,11 +281,13 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def visit_Expr(self, node):
         self.newline()
-        #self.write('/*')
+        if "Str" in repr(node.value):
+            self.write('/*')
         self.statement(node)
         self.generic_visit(node)  
         self.newline()      
-        #self.write('*/')
+        if "Str" in repr(node.value):       
+            self.write('*/')
 
     def check_ReturnType(self, ast_object, node):
         try:
