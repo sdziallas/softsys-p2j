@@ -49,8 +49,8 @@ def PrintTest():
   k = 10%4
   print k
   # this is currently not working
-  # text = "This is 100% tested."
-  # print text
+  text = "This is 100% tested."
+  print text
 
 def ReturnTest(i,j):
     '''Input: int i, int j'''
