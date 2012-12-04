@@ -559,7 +559,7 @@ class SourceGenerator(ExplicitNodeVisitor):
           if found == True and char == ' ':
             found = False
             string += ' + "'
-          elif char == '% ' and found == False:
+          elif (char == '% ' or char == '%.' or char == '%!' or char == '%?')and found == False:
             string += '" + '
             found = True
           else:

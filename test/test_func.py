@@ -49,7 +49,7 @@ def PrintTest():
   k = 10%4
   print k
   # this is currently not working
-  text = "This is 100% tested."
+  text = "This is 100%."
   print text
 
 def ReturnTest(i,j):
