@@ -34,29 +34,23 @@ def IfElseTest(i, j):
         return True
 
 def PrintTest():
-  i = 1.2
   var = 'world'
+  print 'hello %var' % var
+  i = 1
   j = 4
   if i==1:
     print '%i and %j' % i, j
   print 'A match!'
-  print 'and %var %j_p is'
-  print 'hello %var' % var
+  # different ways of printing
   print "The square root of "
-  print i
   print i, ' is'
   print '%i is' % i
-  print " is "
-  print "."
-  print "The square root of %i is %r" % i, r 
-
-  print "the square is ", i
-
-def ModTest():
-    i = 10%4
-    print i
-    text = "This is 100% tested."
-    print text
+  # testing mod
+  k = 10%4
+  print k
+  # this is currently not working
+  # text = "This is 100% tested."
+  # print text
 
 def ReturnTest(i,j):
     '''Input: int i, int j'''
@@ -67,7 +61,7 @@ def DictTest():
     print 'Hello'
     newDict = {}
     
-def listTest():
+def ListTest():
     stack = [3, 4, "Hello"]
     stack.append(6)
     stack.append(7)
