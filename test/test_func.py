@@ -65,7 +65,10 @@ def ListTest():
     stack = [3, 4, "Hello"]
     stack.append(6)
     stack.append(7)
+    stack.pop(1)
+    stack.insert(2, "world")
     print stack
     stack.pop()
     stack.pop()
+    stack.pop(0)
     print stack

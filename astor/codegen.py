@@ -556,6 +556,8 @@ class SourceGenerator(ExplicitNodeVisitor):
           self.write('add')
         elif node.func.attr == 'pop':
           self.write('remove')
+        elif node.func.attr == 'insert':
+          self.write('add')
         else:
           self.visit(node.func.attr)
         self.write('(')
