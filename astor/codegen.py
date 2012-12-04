@@ -268,6 +268,31 @@ class SourceGenerator(ExplicitNodeVisitor):
               self.write(', ')
               self.write(node.value.values[i])
               self.write(');')
+        elif 'Subscript' in repr(node.targets):
+            # Assume that code of form var_name[key] = value is
+            # only for dictionaries
+            dict_name = node.targets[0].value.id
+            key_name = node.targets[0].slice
+            value = node
+            try:
+                key_type = self.check_Type(key_name)
+            except:
+                key_type = type(key_name.value)
+            try:
+                value_type = self.check_Type(value)
+            except:
+                value_type = type(value.value)  
+            if key_type == "String ":
+                key_name = '"'+str(key_name.value.s)+'"'
+            elif key_type == "double " or key_type == "int ":
+                print key_name.value
+                key_name = str(key_name.value.n)
+                print key_name
+            if value_type == "String ":
+                value = '"' + str(value.value.s) + '"'
+            elif value_type == "double " or value_type == "int ":
+                value = str(value.value.n)            
+            self.write(str(dict_name) + '.put(' + key_name + ', ' + value + ");")
         else:
             try:
                 node_type = self.check_Type(node)
@@ -280,6 +305,8 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write(target, ' = ')
                 self.visit(node.value)
             self.write(';')
+
+
 
 
     def visit_AugAssign(self, node):
