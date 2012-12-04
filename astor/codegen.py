@@ -556,7 +556,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         #self.write('"')
         found = False
         string = '"'
-        pattern = r"^[A-Za-z]{1}$"
+        pattern = r"^[A-Za-z_]{1}$"
         pattern_end = r"^[A-Za-z0-9_]{1}$"
         for idx in range(node.s.__len__()):
           char = node.s[idx]
@@ -571,9 +571,8 @@ class SourceGenerator(ExplicitNodeVisitor):
             string += char
         if found == False:
           string += '"'
-        string = string.replace(' + ""', '')
+        #string = string.replace(' + ""', '')
         string = string.replace('"" + ', '')
-        string = string.replace('" +  + "', "% ")
         self.write(string)
 
     def visit_Bytes(self, node):
