@@ -17,6 +17,7 @@ translator for the Software Systems course at Olin College.
 
 import ast
 import string
+import re
 from astor.misc import ExplicitNodeVisitor
 from astor.misc import get_boolop, get_binop, get_cmpop, get_unaryop
 
@@ -555,11 +556,15 @@ class SourceGenerator(ExplicitNodeVisitor):
         #self.write('"')
         found = False
         string = '"'
-        for char in node.s:
-          if found == True and char == ' ':
+        pattern = r"^[A-Za-z]{1}$"
+        pattern_end = r"^[A-Za-z0-9_]{1}$"
+        for idx in range(node.s.__len__()):
+          char = node.s[idx]
+          if found == True and not re.match(pattern_end, char) :
             found = False
             string += ' + "'
-          elif (char == '% ' or char == '%.' or char == '%!' or char == '%?')and found == False:
+            string += char
+          elif char == '%' and re.match(pattern, node.s[idx+1]) and found == False:
             string += '" + '
             found = True
           else:
@@ -568,6 +573,7 @@ class SourceGenerator(ExplicitNodeVisitor):
           string += '"'
         string = string.replace(' + ""', '')
         string = string.replace('"" + ', '')
+        string = string.replace('" +  + "', "% ")
         self.write(string)
 
     def visit_Bytes(self, node):

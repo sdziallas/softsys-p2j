@@ -34,23 +34,26 @@ def IfElseTest(i, j):
         return True
 
 def PrintTest():
+  i = 1.2
   var = 'world'
-  print 'hello %var' % var
-  i = 1
   j = 4
   if i==1:
     print '%i and %j' % i, j
   print 'A match!'
-  # different ways of printing
+  print 'This test is 100% %i' %i
+  print 'This test is 100%!WORKING %i' %i
+  print 'and %var %j_p is'
+  print 'hello %var, this is a test!!' % var
+  print 'hello %var' % var
   print "The square root of "
+  print i
   print i, ' is'
   print '%i is' % i
-  # testing mod
-  k = 10%4
-  print k
-  # this is currently not working
-  text = "This is 100%."
-  print text
+  print " is "
+  print "."
+  print "The square root of %i is %r" % i, r 
+
+  print "the square is ", i
 
 def ReturnTest(i,j):
     '''Input: int i, int j'''
