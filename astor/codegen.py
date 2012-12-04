@@ -552,12 +552,10 @@ class SourceGenerator(ExplicitNodeVisitor):
                 want_comma.append(True)
         self.write(node.func.value.id)
         self.write('.')
-        if node.func.attr == 'append':
+        if node.func.attr == 'append' or node.func.attr == 'insert':
           self.write('add')
         elif node.func.attr == 'pop':
           self.write('remove')
-        elif node.func.attr == 'insert':
-          self.write('add')
         else:
           self.visit(node.func.attr)
         self.write('(')
