@@ -254,6 +254,19 @@ class SourceGenerator(ExplicitNodeVisitor):
               self.write('.add(')
               self.write(node.value.elts[i])
               self.write(');')
+        elif type(node.value) == ast.Dict:
+            self.write('HashMap ');
+            self.write(node.targets[0].id)
+            self.write(' = ')
+            self.write('new HashMap();')
+            for i in range(0,len(node.value.keys)):
+              self.newline(node)
+              self.write(node.targets[0].id)
+              self.write('.put(')
+              self.write(node.value.keys[i])
+              self.write(', ')
+              self.write(node.value.values[i])
+              self.write(');')
         else:
             try:
                 node_type = self.check_Type(node)
