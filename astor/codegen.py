@@ -208,7 +208,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         moduleDetected = False
         firstItem = True
         for idx, item in enumerate(items):
-            if type(item) is ast.BinOp and type(item.op) is ast.Mod:
+            if type(item) is ast.BinOp:
               moduleDetected = True
             if moduleDetected:
               if firstItem:
@@ -463,8 +463,20 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_Return(self, node):
         global returnsNone
         if not returnsNone:
-            self.statement(node, 'return')
-            self.conditional_write(' ', node.value)
+            try:
+                # ast.literal_eval will fail in some cases
+                # The exception will just be the regular conditional_write
+                # code.
+                if ast.literal_eval(node.value)==True:
+                    self.statement(node, 'return true')
+                elif ast.literal_eval(node.value)==False:
+                    self.statement(node, 'return false')
+                else:
+                    self.statement(node, 'return')
+                    self.conditional_write(' ', node.value)
+            except:
+                self.statement(node, 'return')
+                self.conditional_write(' ', node.value)
             self.write(';')
         returnsNone = False
 
