@@ -205,19 +205,14 @@ class SourceGenerator(ExplicitNodeVisitor):
             
     # Change in order to get only the first string
     def comma_list_print(self, items, trailing=False):
-        #print 'COMMA'
         moduleDetected = False
         firstItem = True
         for idx, item in enumerate(items):
-            #print 'ITEM', type(item)
             if type(item) is ast.BinOp:
-              #print item.op
-              #if item.op == 'Mod':
-              #print 'MODULE DETECTED'
               moduleDetected = True
             if moduleDetected:
               if firstItem:
-                self.write(item)
+                self.write(item.left)
                 firstItem = False
             else:
               if firstItem:
@@ -419,7 +414,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write(' >> ')
             values = [node.dest] + node.values
         self.comma_list_print(values, not node.nl)
-        self.write(");");
+        self.write(");")
 
     def visit_Delete(self, node):
         self.statement(node, 'del ')
