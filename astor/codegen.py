@@ -208,7 +208,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         moduleDetected = False
         firstItem = True
         for idx, item in enumerate(items):
-            if type(item) is ast.BinOp:
+            if type(item) is ast.BinOp and type(item.op) is ast.Mod:
               moduleDetected = True
             if moduleDetected:
               if firstItem:
