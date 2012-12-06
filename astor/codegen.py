@@ -262,10 +262,10 @@ class SourceGenerator(ExplicitNodeVisitor):
               self.write(');')
         elif type(node.value) == ast.Dict:
             var_Dict.setdefault(node.targets[0].id, 'HashMap')
-            self.write('HashMap ');
+            self.write('HashMap <Object, Object>');
             self.write(node.targets[0].id)
             self.write(' = ')
-            self.write('new HashMap();')
+            self.write('new HashMap<Object, Object>();')
             for i in range(0,len(node.value.keys)):
               self.newline(node)
               self.write(node.targets[0].id)
@@ -307,7 +307,18 @@ class SourceGenerator(ExplicitNodeVisitor):
             except:
                 self.write("// FIX TYPE OF ASSIGNED VARIABLE")
                 self.newline(node)
-                self.write("int ")
+
+                if 'Subscript' in repr(node.value):                    
+                    var_name = node.value.value.id
+                else:
+                    var_name = None
+                # Check the global dictionary to see if the variable name 
+                # has a corresponding value of "HashMap"
+
+                if var_name in var_Dict.keys() and var_Dict[var_name] == 'HashMap':
+                    self.write("Object ")
+                else:
+                    self.write("int ")
             for target in node.targets:
                 self.write(target, ' = ')
                 self.visit(node.value)
