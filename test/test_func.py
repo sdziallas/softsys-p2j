@@ -22,7 +22,7 @@ def SimpleTest(i,j):
 
 def IfElseTest(i, j):
     '''Input: int i, int j'''
-    '''Output: bool'''
+    '''Output: boolean'''
     if i > j:
         print "i is greater than %i" % j
         return True
@@ -59,24 +59,23 @@ def ReturnTest(i,j):
 
 def DictTest():
     newDict = {1:2}
-    newDict['dude'] = 2
+    newDict[3] = 4
+    x = newDict[3]
     
 def ListTest():
     stack = [3, 4, "Hello"]
-    newDict = {1:2}
-    stack2 = [2,4]
-    
     stack.append(6)
     stack.append(7)
-    stack2.pop(1)
+
+
+    stack.pop(1)
+
     stack.insert(2, "world")
     var = 2
     s = "string"
    
-    newDict['dude'] = 2
     print stack
     stack.pop()
     stack.pop()
     stack.pop(0)
     print stack
-    print stack2
