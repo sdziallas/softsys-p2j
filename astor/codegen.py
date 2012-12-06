@@ -24,6 +24,9 @@ from astor.misc import get_boolop, get_binop, get_cmpop, get_unaryop
 global returnsNone
 returnsNone = False
 
+global typeList
+typeList = ast.Name
+  
 def is_public(name):
     if name[0:2] == '__' or name [0:1] == '_':
 	    return False
@@ -238,13 +241,15 @@ class SourceGenerator(ExplicitNodeVisitor):
             return 'String '
         elif ValueType == bool:
             return 'boolean '
-        elif ValueType == list:
+        elif ValueType == ast.List:
             return 'ArrayList '
 
     def visit_Assign(self, node):
         # TODO: this is not working for things like 10%4
         self.newline(node)
+        global typeList 
         if type(node.value) == ast.List:
+            typeList = ast.List
             self.write('ArrayList ');
             self.write(node.targets[0].id)
             self.write(' = ')
@@ -544,33 +549,35 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.write(node.value, '.', node.attr)
 
     def visit_Call(self, node):
+        global typeList
         want_comma = []
         def write_comma():
             if want_comma:
                 self.write(', ')
             else:
                 want_comma.append(True)
-        self.write(node.func.value.id)
-        self.write('.')
-        if node.func.attr == 'append' or node.func.attr == 'insert':
-          self.write('add')
-        elif node.func.attr == 'pop':
-          self.write('remove')
-        else:
-          self.visit(node.func.attr)
-        self.write('(')
-        if node.func.attr == 'pop' and node.args.__len__() == 0:
+        if typeList == ast.List:
           self.write(node.func.value.id)
-          self.write('.size()-1')
-        else:
-          for arg in node.args:
-              self.write(write_comma, arg)
-          for keyword in node.keywords:
-              self.write(write_comma, keyword.arg, '=', keyword.value)
-          self.conditional_write(write_comma, '*', node.starargs)
-          self.conditional_write(write_comma, '**', node.kwargs)
-        self.write(')')
-        self.write(';')
+          self.write('.')
+          if node.func.attr == 'append' or node.func.attr == 'insert':
+            self.write('add')
+          elif node.func.attr == 'pop':
+            self.write('remove')
+          else:
+            self.visit(node.func.attr)
+          self.write('(')
+          if node.func.attr == 'pop' and node.args.__len__() == 0:
+            self.write(node.func.value.id)
+            self.write('.size()-1')
+          else:
+            for arg in node.args:
+                self.write(write_comma, arg)
+            for keyword in node.keywords:
+                self.write(write_comma, keyword.arg, '=', keyword.value)
+            self.conditional_write(write_comma, '*', node.starargs)
+            self.conditional_write(write_comma, '**', node.kwargs)
+          self.write(')')
+          self.write(';')
 		
     def visit_Name(self, node):
         self.write(node.id);
@@ -589,7 +596,7 @@ class SourceGenerator(ExplicitNodeVisitor):
           char = node.s[idx]
           if found == True and not re.match(pattern_end, char) :
             found = False
-            string += ' + "'
+            string += ' + "' 
             string += char
           elif char == '%' and re.match(pattern, node.s[idx+1]) and found == False:
             string += '" + '

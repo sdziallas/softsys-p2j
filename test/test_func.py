@@ -63,12 +63,20 @@ def DictTest():
     
 def ListTest():
     stack = [3, 4, "Hello"]
+    newDict = {1:2}
+    stack2 = [2,4]
+    
     stack.append(6)
     stack.append(7)
-    stack.pop(1)
+    stack2.pop(1)
     stack.insert(2, "world")
+    var = 2
+    s = "string"
+   
+    newDict['dude'] = 2
     print stack
     stack.pop()
     stack.pop()
     stack.pop(0)
     print stack
+    print stack2
