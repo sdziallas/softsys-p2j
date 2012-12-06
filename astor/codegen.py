@@ -24,6 +24,9 @@ from astor.misc import get_boolop, get_binop, get_cmpop, get_unaryop
 global returnsNone
 returnsNone = False
 
+global var_Dict
+var_Dict = {}
+
 def is_public(name):
     if name[0:2] == '__' or name [0:1] == '_':
 	    return False
@@ -242,10 +245,12 @@ class SourceGenerator(ExplicitNodeVisitor):
             return 'ArrayList '
 
     def visit_Assign(self, node):
+        global var_Dict
         # TODO: this is not working for things like 10%4
         self.newline(node)
         if type(node.value) == ast.List:
             self.write('ArrayList ');
+            var_Dict.setdefault(node.targets[0].id, 'ArrayList')
             self.write(node.targets[0].id)
             self.write(' = ')
             self.write('new ArrayList();')
@@ -256,6 +261,7 @@ class SourceGenerator(ExplicitNodeVisitor):
               self.write(node.value.elts[i])
               self.write(');')
         elif type(node.value) == ast.Dict:
+            var_Dict.setdefault(node.targets[0].id, 'HashMap')
             self.write('HashMap ');
             self.write(node.targets[0].id)
             self.write(' = ')
@@ -273,7 +279,8 @@ class SourceGenerator(ExplicitNodeVisitor):
             # only for dictionaries
             dict_name = node.targets[0].value.id
             key_name = node.targets[0].slice
-            value = node
+            value = node             
+
             try:
                 key_type = self.check_Type(key_name)
             except:
@@ -348,6 +355,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             incorrect_type = True
         return return_type, incorrect_type
 
+
     def visit_FunctionDef(self, node):
         global returnsNone
         self.decorators(node, 1)
@@ -362,7 +370,6 @@ class SourceGenerator(ExplicitNodeVisitor):
                 for if_object in ast_object.body:
                     if 'Return' in repr(if_object):
                         return_type, incorrect_type = self.check_ReturnType(ast_object, node)
-
 
         if return_type == None:
             # There is no return type
@@ -661,8 +668,8 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_UnaryOp(self, node):
         self.write(get_unaryop(node.op), ' ', node.operand)
 
-    def visit_Subscript(self, node):
-        self.write(node.value, '[', node.slice, ']')
+    def visit_Subscript(self, node):        
+        self.write(node.value, '.get(', node.slice, ')')
 
     def visit_Slice(self, node):
         self.conditional_write(node.lower)
