@@ -478,8 +478,12 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.write(");")
 
     def visit_Delete(self, node):
-        self.statement(node, 'del ')
-        self.comma_list(node.targets)
+        if 'Subscript' in repr(node.targets):
+            var_name = node.targets[0].value.id
+            self.write(var_name + '.remove(' + str(node.targets[0].slice.value.n)+');')
+        else:
+            self.statement(node, 'del ')
+            self.comma_list(node.targets)
 
     def visit_TryExcept(self, node):
         self.statement(node, 'try:')
@@ -569,9 +573,34 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write(', ')
             else:
                 want_comma.append(True)
-        var_name = node.func.value.id
-        if var_name in var_Dict.keys() and var_Dict[var_name] == 'ArrayList':
-          self.write(node.func.value.id)
+        def visit_Call(self, node):
+        want_comma = []
+        def write_comma():
+            if want_comma:
+                self.write(', ')
+            else:
+                want_comma.append(True)
+
+        if hasattr(node.func, 'value'):
+            var_name = node.func.value.id   
+        elif hasattr(node.func, 'id'):
+            var_name = node.args[0].id
+
+        if var_name in var_Dict.keys() and var_Dict[var_name] == 'HashMap':
+            # self.write('Dictionary Method')
+            if hasattr(node.func, 'value'):                    
+                if node.func.attr == 'keys':
+                    var_meth = '.keySet();'
+                elif node.func.attr == 'values':
+                    var_meth = '.values();'
+            elif hasattr(node.func, 'id'):
+                if node.func.id == 'len':
+                    var_meth = '.size();'
+            self.write(var_name+ var_meth)
+
+
+        else:
+          self.write(var_name)
           self.write('.')
           if node.func.attr == 'append' or node.func.attr == 'insert':
             self.write('add')
@@ -581,7 +610,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.visit(node.func.attr)
           self.write('(')
           if node.func.attr == 'pop' and node.args.__len__() == 0:
-            self.write(node.func.value.id)
+            self.write(var_name)
             self.write('.size()-1')
           else:
             for arg in node.args:
@@ -592,6 +621,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.conditional_write(write_comma, '**', node.kwargs)
           self.write(')')
           self.write(';')
+         
 		
     def visit_Name(self, node):
         self.write(node.id);
