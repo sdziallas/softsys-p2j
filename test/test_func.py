@@ -79,3 +79,10 @@ def ListTest():
     stack.pop()
     stack.pop(0)
     print stack
+    
+    newDict = {1:2}
+    newDict[3] = stack
+    newDict[4] = 2
+    newDict[5] = "Hello"
+    x = newDict[3]
+    print stack

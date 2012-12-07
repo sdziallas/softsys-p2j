@@ -241,8 +241,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             return 'String '
         elif ValueType == bool:
             return 'boolean '
-        elif ValueType == ast.List:
-            return 'ArrayList '
+
 
     def visit_Assign(self, node):
         global var_Dict
@@ -299,6 +298,8 @@ class SourceGenerator(ExplicitNodeVisitor):
                 value = '"' + str(value.value.s) + '"'
             elif value_type == "double " or value_type == "int ":
                 value = str(value.value.n)            
+            else:
+              value = value.value.id
             self.write(str(dict_name) + '.put(' + key_name + ', ' + value + ");")
         else:
             try:
@@ -308,7 +309,7 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write("// FIX TYPE OF ASSIGNED VARIABLE")
                 self.newline(node)
 
-                if 'Subscript' in repr(node.value):                    
+                if 'Subscript' in repr(node.value):
                     var_name = node.value.value.id
                 else:
                     var_name = None
