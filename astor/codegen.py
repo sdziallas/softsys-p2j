@@ -24,9 +24,6 @@ from astor.misc import get_boolop, get_binop, get_cmpop, get_unaryop
 global returnsNone
 returnsNone = False
 
-global typeList
-typeList = ast.Name
-
 global var_Dict
 var_Dict = {}
 
@@ -250,12 +247,10 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_Assign(self, node):
         global var_Dict
         # TODO: this is not working for things like 10%4
-        self.newline(node)
-        global typeList 
+        self.newline(node) 
         if type(node.value) == ast.List:
-            typeList = ast.List
-            self.write('ArrayList ');
             var_Dict.setdefault(node.targets[0].id, 'ArrayList')
+            self.write('ArrayList ');
             self.write(node.targets[0].id)
             self.write(' = ')
             self.write('new ArrayList();')
@@ -566,14 +561,15 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.write(node.value, '.', node.attr)
 
     def visit_Call(self, node):
-        global typeList
+        global var_Dict
         want_comma = []
         def write_comma():
             if want_comma:
                 self.write(', ')
             else:
                 want_comma.append(True)
-        if typeList == ast.List:
+        var_name = node.func.value.id
+        if var_name in var_Dict.keys() and var_Dict[var_name] == 'ArrayList':
           self.write(node.func.value.id)
           self.write('.')
           if node.func.attr == 'append' or node.func.attr == 'insert':
