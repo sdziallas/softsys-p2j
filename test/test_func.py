@@ -20,6 +20,18 @@ def SimpleTest(i,j):
         print 'A match! %i %j' % i, j
     print 'A match!'
 
+def ClassTest():
+
+    class BankAccount(object):
+        def __init__(self, initial_balance=0):
+            self.balance = initial_balance
+        def deposit(self, amount):
+            self.balance += amount
+        def withdraw(self, amount):
+            self.balance -= amount
+        def overdrawn(self):
+            return self.balance < 0
+
 def IfElseTest(i, j):
     '''Input: int i, int j'''
     '''Output: boolean'''
