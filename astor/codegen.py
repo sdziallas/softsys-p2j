@@ -371,6 +371,8 @@ class SourceGenerator(ExplicitNodeVisitor):
         global returnsNone
         self.decorators(node, 1)
 
+        self.statement(node, 'public static void main(String[] args){ ' + 'new ' + node.name + '(); }')
+
         return_type = None        
 
         # determine the function's return type
