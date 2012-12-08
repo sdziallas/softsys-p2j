@@ -460,7 +460,10 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.newline(node)
         if type(node.iter) == ast.Call:
             if type(node.iter.func) == ast.Attribute:
-                print "Attribute"
+                if node.iter.func.attr == 'keys':
+                    self.write('for (Object ' + node.target.id + ':' + node.iter.func.value.id + '.keySet()){')
+                elif node.iter.func.attr == 'values':
+                    self.write('for (Object ' + node.target.id + ':' + node.iter.func.value.id + '.values()){')
             elif type(node.iter.func) == ast.Name:
                 if node.iter.func.id == 'range':
                     self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
@@ -474,19 +477,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             elif var_name in var_Dict.keys() and var_Dict[var_name] == 'ArrayList':
                 self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
                 self.newline(node)
-                self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
-=======
-          var_name = node.iter.id
-          print var_Dict[var_name] == 'String '
-          if var_name in var_Dict.keys() and var_Dict[var_name] == 'String ':
-            self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
-            self.newline(node)
-            self.write('\t\tchar ', node.target.id, ' = ', node.iter.id, '.charAt(i);')
-          elif var_name in var_Dict.keys() and var_Dict[var_name] == 'ArrayList':
-            self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
-            self.newline(node)
-            self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
->>>>>>> f127a31b39d0273dc468e3664445ef71332b9e8c
+                self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')         
         self.body_or_else(node)
         self.newline(node);
         self.write('}')

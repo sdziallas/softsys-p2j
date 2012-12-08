@@ -77,12 +77,9 @@ def DictTest():
     z = newDict.values()
     x = len(newDict)
     del newDict[3]
-    
-    for i in range(5):
-        print i
 
-    for key in newDict.keys():
-        print key
+    for value in newDict.values():
+        print value
     
 def ListTest():
     stack = [3, 4, "Hello"]
