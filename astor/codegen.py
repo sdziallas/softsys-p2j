@@ -290,24 +290,12 @@ class SourceGenerator(ExplicitNodeVisitor):
             try:
                 value_type = self.check_Type(value)
             except:
-<<<<<<< HEAD
-                value_type = type(value.value)  
-=======
                 value_type = type(value.value)
-                print '\nvalue_type except'
-
-            print '\nvalue type', value_type
-            print '\nkey type', key_type
->>>>>>> 68d8b501fd69f0cc34beea650dec262342092936
             if key_type == "String ":
                 key_name = '"'+str(key_name.value.s)+'"'
             elif key_type == "double " or key_type == "int ":
                 print key_name.value
                 key_name = str(key_name.value.n)
-<<<<<<< HEAD
-=======
-                print key_name
->>>>>>> 68d8b501fd69f0cc34beea650dec262342092936
             if value_type == "String ":
                 value = '"' + str(value.value.s) + '"'
             elif value_type == "double " or value_type == "int ":
@@ -317,8 +305,13 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write(str(dict_name) + '.put(' + key_name + ', ' + value + ");")
         else:
             try:
-                node_type = self.check_Type(node)
-                self.write(node_type)
+                # First check if the variable has not been initialized yet
+                # If not, then declare the variable type and name
+                # Otherwise, skip this step and just write the name
+                if node.targets[0].id not in var_Dict.keys():
+                    node_type = self.check_Type(node)
+                    self.write(node_type)
+                    var_Dict[node.targets[0].id] = node_type
             except:
                 self.write("// FIX TYPE OF ASSIGNED VARIABLE")
                 self.newline(node)
@@ -474,6 +467,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
         elif type(node.iter) == ast.Name:
           var_name = node.iter.id
+          print var_Dict[var_name] == 'String '
           if var_name in var_Dict.keys() and var_Dict[var_name] == 'String ':
             self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
             self.newline(node)
