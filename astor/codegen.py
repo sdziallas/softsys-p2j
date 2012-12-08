@@ -229,17 +229,22 @@ class SourceGenerator(ExplicitNodeVisitor):
     # Statements
 
     def check_Type(self, node):
+        global var_Dict
         # TODO: this does not work for things like 10%4
         ValueType = type(ast.literal_eval(node.value))
         if ValueType == int:
+            var_Dict.setdefault(node.targets[0].id, 'int')
             return 'int '
         elif ValueType == float:
 			# In Java, 'float' requires 'F' to appear after the number,
 			# but 'double' does not.
+            var_Dict.setdefault(node.targets[0].id, 'double')
             return 'double '
         elif ValueType == str:
+            var_Dict.setdefault(node.targets[0].id, 'String')
             return 'String '
         elif ValueType == bool:
+            var_Dict.setdefault(node.targets[0].id, 'boolean')
             return 'boolean '
 
 
@@ -450,8 +455,22 @@ class SourceGenerator(ExplicitNodeVisitor):
 
 
     def visit_For(self, node):
-        self.statement(node, 'for ', node.target, ' in ', node.iter, ':')
+        global var_Dict
+        #self.statement(node, 'for ', node.target, ' in ', node.iter, ':')
+        self.newline(node)
+        print type(node.iter)
+        if type(node.iter) == ast.Call:
+          if node.iter.func.id == 'range':
+            self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
+        elif type(node.iter) == ast.Name:
+          var_name = node.iter.id
+          if var_name in var_Dict.keys() and var_Dict[var_name] == 'String':
+            self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
+            self.newline(node)
+            self.write('char ', node.target.id, ' = ', node.iter.id, '[i];')
         self.body_or_else(node)
+        self.newline(node);
+        self.write('}')
 
     def visit_While(self, node):
         self.statement(node, 'while ', node.test, ':')
