@@ -470,14 +470,14 @@ class SourceGenerator(ExplicitNodeVisitor):
         elif type(node.iter) == ast.Name:
             var_name = node.iter.id
     
-            if var_name in var_Dict.keys() and var_Dict[var_name] == 'String':
+            if var_name in var_Dict.keys() and var_Dict[var_name] == 'String ':
                 self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
                 self.newline(node)
                 self.write('\t\tchar ', node.target.id, ' = ', node.iter.id, '.charAt(i);')
             elif var_name in var_Dict.keys() and var_Dict[var_name] == 'ArrayList':
                 self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
                 self.newline(node)
-                self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')         
+                self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
         self.body_or_else(node)
         self.newline(node);
         self.write('}')
