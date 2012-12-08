@@ -288,7 +288,6 @@ class SourceGenerator(ExplicitNodeVisitor):
                 value_type = self.check_Type(value)
             except:
                 value_type = type(value.value)
-
             if key_type == "String ":
                 key_name = '"'+str(key_name.value.s)+'"'
             elif key_type == "double " or key_type == "int ":
@@ -302,8 +301,13 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write(str(dict_name) + '.put(' + key_name + ', ' + value + ");")
         else:
             try:
-                node_type = self.check_Type(node)
-                self.write(node_type)
+                # First check if the variable has not been initialized yet
+                # If not, then declare the variable type and name
+                # Otherwise, skip this step and just write the name
+                if node.targets[0].id not in var_Dict.keys():
+                    node_type = self.check_Type(node)
+                    self.write(node_type)
+                    var_Dict[node.targets[0].id] = node_type
             except:
                 self.write("// FIX TYPE OF ASSIGNED VARIABLE")
                 self.newline(node)
@@ -471,6 +475,18 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
                 self.newline(node)
                 self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
+=======
+          var_name = node.iter.id
+          print var_Dict[var_name] == 'String '
+          if var_name in var_Dict.keys() and var_Dict[var_name] == 'String ':
+            self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
+            self.newline(node)
+            self.write('\t\tchar ', node.target.id, ' = ', node.iter.id, '.charAt(i);')
+          elif var_name in var_Dict.keys() and var_Dict[var_name] == 'ArrayList':
+            self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
+            self.newline(node)
+            self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
+>>>>>>> f127a31b39d0273dc468e3664445ef71332b9e8c
         self.body_or_else(node)
         self.newline(node);
         self.write('}')
