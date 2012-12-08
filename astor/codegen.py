@@ -293,13 +293,11 @@ class SourceGenerator(ExplicitNodeVisitor):
                 value_type = self.check_Type(value)
             except:
                 value_type = type(value.value)  
-            print key_type
             if key_type == "String ":
                 key_name = '"'+str(key_name.value.s)+'"'
             elif key_type == "double " or key_type == "int ":
                 print key_name.value
                 key_name = str(key_name.value.n)
-            print 'VALUE: ', value_type
             if value_type == "String ":
                 value = '"' + str(value.value.s) + '"'
             elif value_type == "double " or value_type == "int ":
@@ -472,7 +470,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
         elif type(node.iter) == ast.Name:
           var_name = node.iter.id
-          if var_name in var_Dict.keys() and var_Dict[var_name] == 'String':
+          if var_name in var_Dict.keys() and var_Dict[var_name] == 'String ':
             self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
             self.newline(node)
             self.write('\t\tchar ', node.target.id, ' = ', node.iter.id, '.charAt(i);')
