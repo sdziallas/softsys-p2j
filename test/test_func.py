@@ -61,6 +61,10 @@ def DictTest():
     newDict = {1:2}
     newDict[3] = 4
     x = newDict[3]
+    y = newDict.keys()
+    z = newDict.values()
+    x = len(newDict)
+    del newDict[3]
     
 def ListTest():
     stack = [3, 4, "Hello"]
@@ -93,3 +97,8 @@ def ForTest():
     chaine = "Bonjour les ZER0S"
     for lettre in chaine:
       print(lettre)
+
+def WhileLoop():
+    i = True
+    while i:
+        i = False

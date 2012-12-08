@@ -308,8 +308,13 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write(str(dict_name) + '.put(' + key_name + ', ' + value + ");")
         else:
             try:
-                node_type = self.check_Type(node)
-                self.write(node_type)
+                # First check if the variable has not been initialized yet
+                # If not, then declare the variable type and name
+                # Otherwise, skip this step and just write the name
+                if node.targets[0].id not in var_Dict.keys():
+                    node_type = self.check_Type(node)
+                    self.write(node_type)
+                    var_Dict[node.targets[0].id] = node_type
             except:
                 self.write("// FIX TYPE OF ASSIGNED VARIABLE")
                 self.newline(node)
@@ -335,6 +340,7 @@ class SourceGenerator(ExplicitNodeVisitor):
 
     def visit_AugAssign(self, node):
         self.statement(node, node.target, get_binop(node.op, ' %s= '), node.value)
+        self.write(';')
 
     def visit_ImportFrom(self, node):
         self.statement(node, 'from ', node.level * '.' , node.module, ' import ')
@@ -375,6 +381,8 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_FunctionDef(self, node):
         global returnsNone
         self.decorators(node, 1)
+
+        self.statement(node, 'public static void main(String[] args){ ' + 'new ' + node.name + '(); }')
 
         return_type = None        
 
@@ -473,8 +481,14 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.write('}')
 
     def visit_While(self, node):
-        self.statement(node, 'while ', node.test, ':')
+        if hasattr(node.test, 'Compare'):
+            self.statement(node, 'while ', node.test, '{')
+        else:
+            self.newline()
+            self.write('while (' + node.test.id +'){')
         self.body_or_else(node)
+        self.newline()
+        self.write('}')
 
     def visit_With(self, node):
         self.statement(node, 'with ', node.context_expr)
@@ -499,6 +513,7 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_Delete(self, node):
         if 'Subscript' in repr(node.targets):
             var_name = node.targets[0].value.id
+            self.newline()
             self.write(var_name + '.remove(' + str(node.targets[0].slice.value.n)+');')
         else:
             self.statement(node, 'del ')
@@ -609,12 +624,12 @@ class SourceGenerator(ExplicitNodeVisitor):
             # self.write('Dictionary Method')
             if hasattr(node.func, 'value'):                    
                 if node.func.attr == 'keys':
-                    var_meth = '.keySet();'
+                    var_meth = '.keySet()'
                 elif node.func.attr == 'values':
-                    var_meth = '.values();'
+                    var_meth = '.values()'
             elif hasattr(node.func, 'id'):
                 if node.func.id == 'len':
-                    var_meth = '.size();'
+                    var_meth = '.size()'
             self.write(var_name+ var_meth)
 
 
@@ -643,7 +658,10 @@ class SourceGenerator(ExplicitNodeVisitor):
          
 		
     def visit_Name(self, node):
-        self.write(node.id);
+        if node.id == 'True' or node.id == 'False':
+            self.write(node.id.lower())
+        else:
+            self.write(node.id)
 
     # Change self.write(repr(node.s)) to the code below
     # in order to get "" instead of ''
