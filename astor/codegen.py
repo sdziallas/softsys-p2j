@@ -279,28 +279,20 @@ class SourceGenerator(ExplicitNodeVisitor):
             dict_name = node.targets[0].value.id
             key_name = node.targets[0].slice
             value = node
-            print 'key name', key_name
-            print 'value', value
 
             try:
                 key_type = self.check_Type(key_name)
             except:
                 key_type = type(key_name.value)
-                print '\nkey_type except'
             try:
                 value_type = self.check_Type(value)
             except:
                 value_type = type(value.value)
-                print '\nvalue_type except'
 
-            print '\nvalue type', value_type
-            print '\nkey type', key_type
             if key_type == "String ":
                 key_name = '"'+str(key_name.value.s)+'"'
             elif key_type == "double " or key_type == "int ":
-                print key_name.value
                 key_name = str(key_name.value.n)
-                print key_name
             if value_type == "String ":
                 value = '"' + str(value.value.s) + '"'
             elif value_type == "double " or value_type == "int ":
@@ -463,18 +455,22 @@ class SourceGenerator(ExplicitNodeVisitor):
         #self.statement(node, 'for ', node.target, ' in ', node.iter, ':')
         self.newline(node)
         if type(node.iter) == ast.Call:
-          if node.iter.func.id == 'range':
-            self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
+            if type(node.iter.func) == ast.Attribute:
+                print "Attribute"
+            elif type(node.iter.func) == ast.Name:
+                if node.iter.func.id == 'range':
+                    self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
         elif type(node.iter) == ast.Name:
-          var_name = node.iter.id
-          if var_name in var_Dict.keys() and var_Dict[var_name] == 'String':
-            self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
-            self.newline(node)
-            self.write('\t\tchar ', node.target.id, ' = ', node.iter.id, '.charAt(i);')
-          elif var_name in var_Dict.keys() and var_Dict[var_name] == 'ArrayList':
-            self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
-            self.newline(node)
-            self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
+            var_name = node.iter.id
+    
+            if var_name in var_Dict.keys() and var_Dict[var_name] == 'String':
+                self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
+                self.newline(node)
+                self.write('\t\tchar ', node.target.id, ' = ', node.iter.id, '.charAt(i);')
+            elif var_name in var_Dict.keys() and var_Dict[var_name] == 'ArrayList':
+                self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
+                self.newline(node)
+                self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
         self.body_or_else(node)
         self.newline(node);
         self.write('}')
