@@ -574,7 +574,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             else:
                 want_comma.append(True)
         def visit_Call(self, node):
-        want_comma = []
+            want_comma = []
         def write_comma():
             if want_comma:
                 self.write(', ')
