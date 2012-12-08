@@ -293,19 +293,20 @@ class SourceGenerator(ExplicitNodeVisitor):
                 value_type = self.check_Type(value)
             except:
                 value_type = type(value.value)  
+            print key_type
             if key_type == "String ":
                 key_name = '"'+str(key_name.value.s)+'"'
             elif key_type == "double " or key_type == "int ":
                 print key_name.value
                 key_name = str(key_name.value.n)
-                print key_name
+            print 'VALUE: ', value_type
             if value_type == "String ":
                 value = '"' + str(value.value.s) + '"'
             elif value_type == "double " or value_type == "int ":
                 value = str(value.value.n)            
             else:
-              value = value.value.id
-            self.write(str(dict_name) + '.put(' + key_name + ', ' + value + ");")
+              value = value.value.n
+            self.write(str(dict_name), '.put(' , key_name , ', ' , value , ");")
         else:
             try:
                 # First check if the variable has not been initialized yet
@@ -314,7 +315,7 @@ class SourceGenerator(ExplicitNodeVisitor):
                 if node.targets[0].id not in var_Dict.keys():
                     node_type = self.check_Type(node)
                     self.write(node_type)
-                    var_Dict[node.targets[0].id] = node_type
+                    #var_Dict[node.targets[0].id] = node_type
             except:
                 self.write("// FIX TYPE OF ASSIGNED VARIABLE")
                 self.newline(node)
@@ -466,7 +467,6 @@ class SourceGenerator(ExplicitNodeVisitor):
         global var_Dict
         #self.statement(node, 'for ', node.target, ' in ', node.iter, ':')
         self.newline(node)
-        print type(node.iter)
         if type(node.iter) == ast.Call:
           if node.iter.func.id == 'range':
             self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
@@ -475,7 +475,11 @@ class SourceGenerator(ExplicitNodeVisitor):
           if var_name in var_Dict.keys() and var_Dict[var_name] == 'String':
             self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
             self.newline(node)
-            self.write('char ', node.target.id, ' = ', node.iter.id, '[i];')
+            self.write('\t\tchar ', node.target.id, ' = ', node.iter.id, '.charAt(i);')
+          elif var_name in var_Dict.keys() and var_Dict[var_name] == 'ArrayList':
+            self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
+            self.newline(node)
+            self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
         self.body_or_else(node)
         self.newline(node);
         self.write('}')

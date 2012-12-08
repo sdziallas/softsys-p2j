@@ -90,13 +90,25 @@ def ListTest():
     newDict[5] = "Hello"
     x = newDict[3]
     print stack
+
 def ForTest():
     for i in range(10):
       print('Hello')
       
-    chaine = "Bonjour les ZER0S"
-    for lettre in chaine:
-      print(lettre)
+    string = "Hello World"
+    for letter in string:
+      print(letter)
+      
+    items = ['red', 'orange', 'yellow', 'green']
+    for item in items:
+      print(item)
+      
+    x = 0       # Exercise Play Computer Loop
+    y = 1                  
+    for n in [5, 4, 6]:     
+      x = x + y*n         
+      y = y + 1                  
+    print(x)  
 
 def WhileLoop():
     i = True
