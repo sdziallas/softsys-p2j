@@ -229,22 +229,17 @@ class SourceGenerator(ExplicitNodeVisitor):
     # Statements
 
     def check_Type(self, node):
-        global var_Dict
         # TODO: this does not work for things like 10%4
         ValueType = type(ast.literal_eval(node.value))
         if ValueType == int:
-            var_Dict.setdefault(node.targets[0].id, 'int')
             return 'int '
         elif ValueType == float:
 			# In Java, 'float' requires 'F' to appear after the number,
 			# but 'double' does not.
-            var_Dict.setdefault(node.targets[0].id, 'double')
             return 'double '
         elif ValueType == str:
-            var_Dict.setdefault(node.targets[0].id, 'String')
             return 'String '
         elif ValueType == bool:
-            var_Dict.setdefault(node.targets[0].id, 'boolean')
             return 'boolean '
 
 
@@ -283,39 +278,40 @@ class SourceGenerator(ExplicitNodeVisitor):
             # only for dictionaries
             dict_name = node.targets[0].value.id
             key_name = node.targets[0].slice
-            value = node             
+            value = node
+            print 'key name', key_name
+            print 'value', value
 
             try:
                 key_type = self.check_Type(key_name)
             except:
                 key_type = type(key_name.value)
+                print '\nkey_type except'
             try:
                 value_type = self.check_Type(value)
             except:
-                value_type = type(value.value)  
-            print key_type
+                value_type = type(value.value)
+                print '\nvalue_type except'
+
+            print '\nvalue type', value_type
+            print '\nkey type', key_type
             if key_type == "String ":
                 key_name = '"'+str(key_name.value.s)+'"'
             elif key_type == "double " or key_type == "int ":
                 print key_name.value
                 key_name = str(key_name.value.n)
-            print 'VALUE: ', value_type
+                print key_name
             if value_type == "String ":
                 value = '"' + str(value.value.s) + '"'
             elif value_type == "double " or value_type == "int ":
                 value = str(value.value.n)            
             else:
-              value = value.value.n
-            self.write(str(dict_name), '.put(' , key_name , ', ' , value , ");")
+              value = value.value.id
+            self.write(str(dict_name) + '.put(' + key_name + ', ' + value + ");")
         else:
             try:
-                # First check if the variable has not been initialized yet
-                # If not, then declare the variable type and name
-                # Otherwise, skip this step and just write the name
-                if node.targets[0].id not in var_Dict.keys():
-                    node_type = self.check_Type(node)
-                    self.write(node_type)
-                    #var_Dict[node.targets[0].id] = node_type
+                node_type = self.check_Type(node)
+                self.write(node_type)
             except:
                 self.write("// FIX TYPE OF ASSIGNED VARIABLE")
                 self.newline(node)
@@ -335,7 +331,6 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write(target, ' = ')
                 self.visit(node.value)
             self.write(';')
-
 
 
 
