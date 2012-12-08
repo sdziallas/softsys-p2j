@@ -102,6 +102,13 @@ def ListTest():
     newDict[5] = "Hello"
     x = newDict[3]
     print stack
+def ForTest():
+    for i in range(10):
+      print('Hello')
+      
+    chaine = "Bonjour les ZER0S"
+    for lettre in chaine:
+      print(lettre)
 
 def WhileLoop():
     i = True
