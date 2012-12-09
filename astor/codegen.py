@@ -374,7 +374,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         global returnsNone
         self.decorators(node, 1)
 
-        self.statement(node, 'public static void main(String[] args){ ' + 'new ' + node.name + '(); }')
+        self.statement(node, 'public static void main(String[] args){ ' + node.name + '(); }')
 
         return_type = None        
 
@@ -393,7 +393,7 @@ class SourceGenerator(ExplicitNodeVisitor):
             return_type = 'void '
                 
         if is_public(node.name):
-	        self.statement(node, 'public ' + return_type + '%s(' % node.name)
+	        self.statement(node, 'public static ' + return_type + '%s(' % node.name)
         else:
             self.statement(node, 'private ' + return_type + '%s(' % node.name[2:])
 
