@@ -309,7 +309,7 @@ class SourceGenerator(ExplicitNodeVisitor):
                     self.write(node_type)
                     var_Dict[node.targets[0].id] = node_type
             except:
-                self.write("// FIX TYPE OF ASSIGNED VARIABLE")
+                self.write("// fix type of assigned variable")
                 self.newline(node)
 
                 if 'Subscript' in repr(node.value):
@@ -374,6 +374,9 @@ class SourceGenerator(ExplicitNodeVisitor):
         global returnsNone
         self.decorators(node, 1)
 
+        if node.args.args != []:
+            self.statement(node, "// fix input here according to your function")
+
         self.statement(node, 'public static void main(String[] args){ ' + node.name + '(); }')
 
         return_type = None        
@@ -407,7 +410,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         if incorrect_type:
             self.indentation += 1
             self.newline(node)
-            self.write('// Fix the return type')
+            self.write('// fix the return type')
             self.indentation -= 1
         self.body(node.body)
         self.newline(node)
