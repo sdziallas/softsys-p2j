@@ -27,6 +27,9 @@ returnsNone = False
 global var_Dict
 var_Dict = {}
 
+global numberOfLoopsCreated
+numberOfLoopsCreated = 0
+
 def is_public(name):
     if name[0:2] == '__' or name [0:1] == '_':
 	    return False
@@ -478,6 +481,36 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
                 self.newline(node)
                 self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
+        elif type(node.iter) == ast.List:
+          global numberOfLoopsCreated
+          var_Dict.setdefault('tempList', 'ArrayList')
+          self.write('ArrayList ');
+          self.write('tempList', numberOfLoopsCreated)
+          self.write(' = ')
+          self.write('new ArrayList();')
+          for i in range(0,len(node.iter.elts)):
+            val_type = type(ast.literal_eval(node.iter.elts[i]))
+            print val_type
+            if val_type ==  str:
+              val_type = 'String'
+            elif val_type == int:
+              val_type = 'int'
+            elif val_type == float:
+			# In Java, 'float' requires 'F' to appear after the number,
+			# but 'double' does not.
+			        val_type = 'double'
+            elif val_type == bool:
+              val_type = 'boolean'
+            self.newline(node)
+            self.write('tempList', numberOfLoopsCreated)
+            self.write('.add(')
+            self.write(node.iter.elts[i])
+            self.write(');')
+            self.newline(node)
+          self.write('for(int i=0; i< tempList', numberOfLoopsCreated, '.size(); i++){')
+          self.newline(node)
+          self.write('\t\t', val_type, ' ', node.target.id, ' = (', val_type, ')tempList', numberOfLoopsCreated, '.get(i);')
+          numberOfLoopsCreated = numberOfLoopsCreated + 1
         self.body_or_else(node)
         self.newline(node);
         self.write('}')
