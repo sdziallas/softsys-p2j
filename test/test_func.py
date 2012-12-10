@@ -126,7 +126,10 @@ def ForTest():
     for n in [5, 4, 6]:     
       x = x + y*n         
       y = y + 1                  
-    print(x)  
+    print(x)
+    
+    for a in range(0, 3):
+      print "We're on time %a" % (a)
 
 def WhileLoop():
     i = True

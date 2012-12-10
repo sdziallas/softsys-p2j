@@ -32,7 +32,7 @@ var_Dict = {}
 # keeps track of the number of for loops in a function for the purpose of
 # creating ArrayLists with unique names before looping through the ArrayList
 global numberOfLoopsCreated
-numberOfLoopsCreated = 0
+numberOfLoopsCreated = 1
 
 
 def is_public(name):
@@ -483,8 +483,10 @@ class SourceGenerator(ExplicitNodeVisitor):
                 elif node.iter.func.attr == 'values':
                     self.write('for (Object ' + node.target.id + ':' + node.iter.func.value.id + '.values()){')
             elif type(node.iter.func) == ast.Name:
-                if node.iter.func.id == 'range':
+                if node.iter.func.id == 'range' and len(node.iter.args) == 1:
                     self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
+                elif node.iter.func.id == 'range' and len(node.iter.args) == 2:
+                    self.write('for(int ', node.target, ' = ', node.iter.args[0].n,'; ', node.target, ' < ', node.iter.args[1].n, '; ', node.target, '++){')
         elif type(node.iter) == ast.Name:
             var_name = node.iter.id
     
@@ -505,7 +507,6 @@ class SourceGenerator(ExplicitNodeVisitor):
           self.write('new ArrayList();')
           for i in range(0,len(node.iter.elts)):
             val_type = type(ast.literal_eval(node.iter.elts[i]))
-            print val_type
             if val_type ==  str:
               val_type = 'String'
             elif val_type == int:
