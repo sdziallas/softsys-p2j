@@ -250,6 +250,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         global var_Dict
         # TODO: this is not working for things like 10%4
         self.newline(node) 
+        # Creating ArrayList
         if type(node.value) == ast.List:
             var_Dict.setdefault(node.targets[0].id, 'ArrayList')
             self.write('ArrayList ');
@@ -459,25 +460,29 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.else_body(else_)
                 break
 
-
+    # Different implementations of for
     def visit_For(self, node):
         global var_Dict
-        #self.statement(node, 'for ', node.target, ' in ', node.iter, ':')
         self.newline(node)
+        # If range, keys or values
         if type(node.iter) == ast.Call:
             if type(node.iter.func) == ast.Attribute:
+                # Iterate the keys
                 if node.iter.func.attr == 'keys':
                     self.write('for (Object ' + node.target.id + ':' + node.iter.func.value.id + '.keySet()){')
+                # Iterate the values
                 elif node.iter.func.attr == 'values':
                     self.write('for (Object ' + node.target.id + ':' + node.iter.func.value.id + '.values()){')
             elif type(node.iter.func) == ast.Name:
+                # If range has only the end point
                 if node.iter.func.id == 'range' and len(node.iter.args) == 1:
                     self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
+                # If range has both start and end point
                 elif node.iter.func.id == 'range' and len(node.iter.args) == 2:
                     self.write('for(int ', node.target, ' = ', node.iter.args[0].n,'; ', node.target, ' < ', node.iter.args[1].n, '; ', node.target, '++){')
+        # If string or array 
         elif type(node.iter) == ast.Name:
             var_name = node.iter.id
-    
             if var_name in var_Dict.keys() and var_Dict[var_name] == 'String ':
                 self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
                 self.newline(node)
@@ -486,14 +491,17 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
                 self.newline(node)
                 self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
+        # If iterating a list declared in the same for
         elif type(node.iter) == ast.List:
           global numberOfLoopsCreated
           var_Dict.setdefault('tempList', 'ArrayList')
+          # Creating the ArrayList
           self.write('ArrayList ');
           self.write('tempList', numberOfLoopsCreated)
           self.write(' = ')
           self.write('new ArrayList();')
           for i in range(0,len(node.iter.elts)):
+            # checking the type of the variable
             val_type = type(ast.literal_eval(node.iter.elts[i]))
             if val_type ==  str:
               val_type = 'String'
@@ -506,14 +514,18 @@ class SourceGenerator(ExplicitNodeVisitor):
             elif val_type == bool:
               val_type = 'boolean'
             self.newline(node)
+            # Storing the variable in the ArrayList
             self.write('tempList', numberOfLoopsCreated)
             self.write('.add(')
             self.write(node.iter.elts[i])
             self.write(');')
             self.newline(node)
+          # Creating the for loop in Java
           self.write('for(int i=0; i< tempList', numberOfLoopsCreated, '.size(); i++){')
           self.newline(node)
+          # Downcasting the ArrayList to get the type required
           self.write('\t\t', val_type, ' ', node.target.id, ' = (', val_type, ')tempList', numberOfLoopsCreated, '.get(i);')
+          # Increment the variables in order to support more declations of this kind of for loop
           numberOfLoopsCreated = numberOfLoopsCreated + 1
         self.body_or_else(node)
         self.newline(node);
@@ -705,9 +717,6 @@ class SourceGenerator(ExplicitNodeVisitor):
     # Change self.write(repr(node.s)) to the code below
     # in order to get "" instead of ''
     def visit_Str(self, node):
-       #self.write('"')
-        #self.write(node.s)
-        #self.write('"')
         found = False
         string = '"'
         pattern = r"^[A-Za-z_]{1}$"
