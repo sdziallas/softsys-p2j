@@ -21,16 +21,25 @@ import re
 from astor.misc import ExplicitNodeVisitor
 from astor.misc import get_boolop, get_binop, get_cmpop, get_unaryop
 
+# determines whether a Python function returns None and thus is void in Java
 global returnsNone
 returnsNone = False
 
+# stores variable names as keys and their type (i.e. 'ArrayList') as the value
 global var_Dict
 var_Dict = {}
 
+# keeps track of the number of for loops in a function for the purpose of
+# creating ArrayLists with unique names before looping through the ArrayList
 global numberOfLoopsCreated
 numberOfLoopsCreated = 1
 
+
 def is_public(name):
+    """
+    This function checks whether a class/function name is public. It is private
+    if it has two underscores at the beginning, and is public by default.
+    """
     if name[0:2] == '__' or name [0:1] == '_':
 	    return False
     else:
@@ -57,9 +66,12 @@ def to_source(node, fname, indent_with=' ' * 4, add_line_information=False):
     """
 
     generator = SourceGenerator(indent_with, add_line_information)
+
+    # we always import java.util because this library is usually required
     generator.write("import java.util.*;")
     generator.newline()
 
+    # we enclose everything inside a public/private class
     if is_public(fname):
         generator.write("public class "+ fname + "{")
     else:
@@ -114,8 +126,8 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.result.append(item)
 
     def trans_Expr(self, node, input_output):
-        # Translates docstrings to fix the input variable and return variable
-        # types.
+        """Takes in Python docstrings and extracts the input/output variable
+        and its type. This information is then used in pragmas."""
 
         return_string = ''
 
