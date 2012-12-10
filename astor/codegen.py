@@ -21,16 +21,25 @@ import re
 from astor.misc import ExplicitNodeVisitor
 from astor.misc import get_boolop, get_binop, get_cmpop, get_unaryop
 
+# determines whether a Python function returns None and thus is void in Java
 global returnsNone
 returnsNone = False
 
+# stores variable names as keys and their type (i.e. 'ArrayList') as the value
 global var_Dict
 var_Dict = {}
 
+# keeps track of the number of for loops in a function for the purpose of
+# creating ArrayLists with unique names before looping through the ArrayList
 global numberOfLoopsCreated
 numberOfLoopsCreated = 1
 
+
 def is_public(name):
+    """
+    This function checks whether a class/function name is public. It is private
+    if it has two underscores at the beginning, and is public by default.
+    """
     if name[0:2] == '__' or name [0:1] == '_':
 	    return False
     else:
@@ -57,9 +66,12 @@ def to_source(node, fname, indent_with=' ' * 4, add_line_information=False):
     """
 
     generator = SourceGenerator(indent_with, add_line_information)
+
+    # we always import java.util because this library is usually required
     generator.write("import java.util.*;")
     generator.newline()
 
+    # we enclose everything inside a public/private class
     if is_public(fname):
         generator.write("public class "+ fname + "{")
     else:
@@ -114,8 +126,8 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.result.append(item)
 
     def trans_Expr(self, node, input_output):
-        # Translates docstrings to fix the input variable and return variable
-        # types.
+        """Takes in Python docstrings and extracts the input/output variable
+        and its type. This information is then used in pragmas."""
 
         return_string = ''
 
@@ -256,6 +268,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         global var_Dict
         # TODO: this is not working for things like 10%4
         self.newline(node) 
+        # Creating ArrayList
         if type(node.value) == ast.List:
             var_Dict.setdefault(node.targets[0].id, 'ArrayList')
             self.write('ArrayList ');
@@ -465,25 +478,29 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.else_body(else_)
                 break
 
-
+    # Different implementations of for
     def visit_For(self, node):
         global var_Dict
-        #self.statement(node, 'for ', node.target, ' in ', node.iter, ':')
         self.newline(node)
+        # If range, keys or values
         if type(node.iter) == ast.Call:
             if type(node.iter.func) == ast.Attribute:
+                # Iterate the keys
                 if node.iter.func.attr == 'keys':
                     self.write('for (Object ' + node.target.id + ':' + node.iter.func.value.id + '.keySet()){')
+                # Iterate the values
                 elif node.iter.func.attr == 'values':
                     self.write('for (Object ' + node.target.id + ':' + node.iter.func.value.id + '.values()){')
             elif type(node.iter.func) == ast.Name:
+                # If range has only the end point
                 if node.iter.func.id == 'range' and len(node.iter.args) == 1:
                     self.write('for(int ', node.target, ' = 0; ', node.target, ' < ', node.iter.args[0].n, '; ', node.target, '++){')
+                # If range has both start and end point
                 elif node.iter.func.id == 'range' and len(node.iter.args) == 2:
                     self.write('for(int ', node.target, ' = ', node.iter.args[0].n,'; ', node.target, ' < ', node.iter.args[1].n, '; ', node.target, '++){')
+        # If string or array 
         elif type(node.iter) == ast.Name:
             var_name = node.iter.id
-    
             if var_name in var_Dict.keys() and var_Dict[var_name] == 'String ':
                 self.write('for(int i=0; i<', node.iter.id, '.length(); i++){')
                 self.newline(node)
@@ -492,14 +509,17 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
                 self.newline(node)
                 self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
+        # If iterating a list declared in the same for
         elif type(node.iter) == ast.List:
           global numberOfLoopsCreated
           var_Dict.setdefault('tempList', 'ArrayList')
+          # Creating the ArrayList
           self.write('ArrayList ');
           self.write('tempList', numberOfLoopsCreated)
           self.write(' = ')
           self.write('new ArrayList();')
           for i in range(0,len(node.iter.elts)):
+            # checking the type of the variable
             val_type = type(ast.literal_eval(node.iter.elts[i]))
             if val_type ==  str:
               val_type = 'String'
@@ -512,14 +532,18 @@ class SourceGenerator(ExplicitNodeVisitor):
             elif val_type == bool:
               val_type = 'boolean'
             self.newline(node)
+            # Storing the variable in the ArrayList
             self.write('tempList', numberOfLoopsCreated)
             self.write('.add(')
             self.write(node.iter.elts[i])
             self.write(');')
             self.newline(node)
+          # Creating the for loop in Java
           self.write('for(int i=0; i< tempList', numberOfLoopsCreated, '.size(); i++){')
           self.newline(node)
+          # Downcasting the ArrayList to get the type required
           self.write('\t\t', val_type, ' ', node.target.id, ' = (', val_type, ')tempList', numberOfLoopsCreated, '.get(i);')
+          # Increment the variables in order to support more declations of this kind of for loop
           numberOfLoopsCreated = numberOfLoopsCreated + 1
         self.body_or_else(node)
         self.newline(node);
@@ -854,7 +878,7 @@ class SourceGenerator(ExplicitNodeVisitor):
     @enclose('()')
     def visit_IfExp(self, node):
         self.write(node.body, ' if ', node.test, ' else ', node.orelse)
-w
+
     def visit_Starred(self, node):
         self.write('*', node.value)
 

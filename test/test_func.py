@@ -36,10 +36,10 @@ def IfElseTest(i, j):
     '''Input: int i, int j'''
     '''Output: boolean'''
     if i > j:
-        print "i is greater than %i" % j
+        print "%i is greater than %j" %i, j
         return True
     elif i < j:
-        print "i is less than %i" %j
+        print "%i is less than %j" %i, j
         return False     
     else:
         print "They're equal"
@@ -128,7 +128,7 @@ def ForTest():
       y = y + 1                  
     print(x)
     
-    for a in range(0, 3):
+    for a in range(2, 3):
       print "We're on time %a" % (a)
 
 def WhileLoop():
