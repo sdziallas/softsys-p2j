@@ -201,7 +201,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         for decorator in node.decorator_list:
             self.statement(decorator, '@', decorator)
 
-    # Change in order to get only the first string
+
     def comma_list(self, items, trailing=False):
         for idx, item in enumerate(items):
             if idx:
@@ -211,17 +211,23 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write(',')
             
     # Change in order to get only the first string
+    #Only used by the print function
     def comma_list_print(self, items, trailing=False):
+        #Initialize the variable useful for the function
         moduleDetected = False
         firstItem = True
         for idx, item in enumerate(items):
+            #if it's a BinOp that means that the operation is a mod
             if type(item) is ast.BinOp:
               moduleDetected = True
+              #if there is a module, we just print the left part of the BinOp, that means that we removed the arguments after the module symbole
+              #we don't need anymore
             if moduleDetected:
               if firstItem:
                 self.write(item.left)
                 firstItem = False
             else:
+              #if not just print each element separated by a +
               if firstItem:
                 self.write(item)
                 firstItem = False
@@ -705,27 +711,34 @@ class SourceGenerator(ExplicitNodeVisitor):
     # Change self.write(repr(node.s)) to the code below
     # in order to get "" instead of ''
     def visit_Str(self, node):
-       #self.write('"')
-        #self.write(node.s)
-        #self.write('"')
+        #to know if a variable was found into a string
         found = False
+        #output of the string formatted with the variables inside it
         string = '"'
+        #pattern for the beginning of the name of a variable
         pattern = r"^[A-Za-z_]{1}$"
+        #pattern for the end of the name of a variable
         pattern_end = r"^[A-Za-z0-9_]{1}$"
+        #loop to iterate all the characters of the string
         for idx in range(node.s.__len__()):
           char = node.s[idx]
+          #if a variable was found before and we detect the end of the variable
+          #we set the variable at found false and add the concatenation symbol to the output string
           if found == True and not re.match(pattern_end, char) :
             found = False
             string += ' + "'
             string += char
+          #if we detect the % symbole and that the next character corresponds at the start of a variables
+          #we set the variable found at True and start the concatenation of the name of the variable
           elif char == '%' and re.match(pattern, node.s[idx+1]) and found == False:
             string += '" + '
             found = True
+          #we just add the next character to the output string
           else:
             string += char
         if found == False:
           string += '"'
-        #string = string.replace(' + ""', '')
+        #this replace is useful if we start by a variable to avoid empty quotes
         string = string.replace('"" + ', '')
         self.write(string)
 
@@ -841,7 +854,7 @@ class SourceGenerator(ExplicitNodeVisitor):
     @enclose('()')
     def visit_IfExp(self, node):
         self.write(node.body, ' if ', node.test, ' else ', node.orelse)
-
+w
     def visit_Starred(self, node):
         self.write('*', node.value)
 
