@@ -164,6 +164,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.indentation -= 1
 
     def else_body(self, elsewhat):
+        """We added curly brackets to else statements."""
         if elsewhat:
             self.write('\n', 'else{')
             self.body(elsewhat)
@@ -221,10 +222,12 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.visit(item)
         if trailing:
             self.write(',')
-            
-    # Change in order to get only the first string
-    #Only used by the print function
+
     def comma_list_print(self, items, trailing=False):
+        """
+        This function is only used by the print function, and is changed from
+        comma_list to get only the first string. 
+        """
         #Initialize the variable useful for the function
         moduleDetected = False
         firstItem = True
@@ -247,10 +250,10 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write(' + ')
                 self.visit(item)
 
-    # Statements
-
     def check_Type(self, node):
-        # TODO: this does not work for things like 10%4
+        """This function returns the type of the node's value for ints, floats,
+        doubles, strings, and booleans.
+        """
         ValueType = type(ast.literal_eval(node.value))
         if ValueType == int:
             return 'int '
