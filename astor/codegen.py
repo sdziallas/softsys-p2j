@@ -270,26 +270,33 @@ class SourceGenerator(ExplicitNodeVisitor):
     def visit_Assign(self, node):
         global var_Dict
         # TODO: this is not working for things like 10%4
-        self.newline(node) 
-        # Creating ArrayList
+        self.newline(node)
+        
+        # Creates an ArrayList
         if type(node.value) == ast.List:
             var_Dict.setdefault(node.targets[0].id, 'ArrayList')
             self.write('ArrayList ');
             self.write(node.targets[0].id)
             self.write(' = ')
             self.write('new ArrayList();')
+
+            # adds default values to the ArrayList
             for i in range(0,len(node.value.elts)):
               self.newline(node)
               self.write(node.targets[0].id)
               self.write('.add(')
               self.write(node.value.elts[i])
               self.write(');')
+
+        # Creates a HashMap
         elif type(node.value) == ast.Dict:
             var_Dict.setdefault(node.targets[0].id, 'HashMap')
             self.write('HashMap <Object, Object>');
             self.write(node.targets[0].id)
             self.write(' = ')
             self.write('new HashMap<Object, Object>();')
+
+            # adds default key-value pairs to the HashMap
             for i in range(0,len(node.value.keys)):
               self.newline(node)
               self.write(node.targets[0].id)
@@ -298,6 +305,8 @@ class SourceGenerator(ExplicitNodeVisitor):
               self.write(', ')
               self.write(node.value.values[i])
               self.write(');')
+
+        # deals with values extracted from dictionaries by accessing keys
         elif 'Subscript' in repr(node.targets):
             # Assume that code of form var_name[key] = value is
             # only for dictionaries
@@ -306,24 +315,35 @@ class SourceGenerator(ExplicitNodeVisitor):
             value = node
 
             try:
+                # for keys that are int, double, boolean, etc.
                 key_type = self.check_Type(key_name)
             except:
+                # for keys that have a special type (i.e. ArrayList)
                 key_type = type(key_name.value)
             try:
+                # for values that are int, double, boolean, etc.
                 value_type = self.check_Type(value)
             except:
+                # for values that have a special type (i.e. ArrayList)
                 value_type = type(value.value)
+
+            # extract the key using info about its type
             if key_type == "String ":
                 key_name = '"'+str(key_name.value.s)+'"'
             elif key_type == "double " or key_type == "int ":
                 key_name = str(key_name.value.n)
+
+            # extract the value using info about its type
             if value_type == "String ":
                 value = '"' + str(value.value.s) + '"'
             elif value_type == "double " or value_type == "int ":
                 value = str(value.value.n)            
             else:
               value = value.value.id
+              
             self.write(str(dict_name) + '.put(' + key_name + ', ' + value + ");")
+
+        # deals with normal variable assignment
         else:
             try:
                 # First check if the variable has not been initialized yet
@@ -341,9 +361,11 @@ class SourceGenerator(ExplicitNodeVisitor):
                     var_name = node.value.value.id
                 else:
                     var_name = None
+                    
                 # Check the global dictionary to see if the variable name 
                 # has a corresponding value of "HashMap"
-
+                # if so, assign to a variable of generic Object type
+                # if not, assign to a variable of default int type
                 if var_name in var_Dict.keys() and var_Dict[var_name] == 'HashMap':
                     self.write("Object ")
                 else:
@@ -352,8 +374,6 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write(target, ' = ')
                 self.visit(node.value)
             self.write(';')
-
-
 
     def visit_AugAssign(self, node):
         self.statement(node, node.target, get_binop(node.op, ' %s= '), node.value)
@@ -368,6 +388,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.comma_list(node.names)
 
     def visit_Expr(self, node):
+        """Python docstrings are translated to Java multi-line comments."""
         self.newline()
         if "Str" in repr(node.value):
             self.write('/*')
@@ -378,9 +399,9 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write('*/')
 
     def check_ReturnType(self, ast_object, node):
+        """Determines a given function node's return type."""
         try:
-        # Handles simple case of returning straight integers,
-        # strings, etc.
+        # Handles simple case of returning straight ints, strings, etc.
             return_type = self.check_Type(ast_object)                    
             # Handles return_type of None
             if return_type == None:
