@@ -6,12 +6,6 @@ import string
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import astor
 
-def TestMe(x, y, width=10, foo=None):
-    from foo.bar.baz.murgatroyd import sally as bob
-
-    a.b = c.d + x.y.z.a.b
-    m.n = q = (w.w, x.x.y.y) = f(x.x.y.z)
-
 def SimpleTest(i,j):
     '''Input: int i, int j'''
     # i = 1.2
