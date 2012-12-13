@@ -268,8 +268,12 @@ class SourceGenerator(ExplicitNodeVisitor):
 
 
     def visit_Assign(self, node):
+        """
+        Changed variable assignments to include variable type declarations.
+        TODO: this is not working for things like 10%4
+        """
+        
         global var_Dict
-        # TODO: this is not working for things like 10%4
         self.newline(node)
         
         # Creates an ArrayList
@@ -399,7 +403,10 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write('*/')
 
     def check_ReturnType(self, ast_object, node):
-        """Determines a given function node's return type."""
+        """Determines a given function node's return type. Returns the type
+        and a boolean that says whether the return type is incorrect (i.e. if 
+        the type cannot be determined, and a default is used instead).
+        """
         try:
         # Handles simple case of returning straight ints, strings, etc.
             return_type = self.check_Type(ast_object)                    
@@ -417,6 +424,10 @@ class SourceGenerator(ExplicitNodeVisitor):
         return return_type, incorrect_type
 
     def visit_FunctionDef(self, node):
+        """
+        Changed function definitions to include public, static, and types.
+        """
+        
         global returnsNone
         self.decorators(node, 1)
 
@@ -440,7 +451,8 @@ class SourceGenerator(ExplicitNodeVisitor):
             # There is no return type
             incorrect_type = False
             return_type = 'void '
-                
+
+        # determine whether the funciton is public (and static) or private
         if is_public(node.name):
 	        self.statement(node, 'public static ' + return_type + '%s(' % node.name)
         else:
@@ -453,6 +465,8 @@ class SourceGenerator(ExplicitNodeVisitor):
         if getattr(node, 'returns', None) is not None:
             self.write(' ->', node.returns)
         self.write('{')
+
+        # if uses a default type (i.e. for expressions), then add a comment
         if incorrect_type:
             self.indentation += 1
             self.newline(node)
@@ -486,6 +500,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.body(node.body)
 
     def visit_If(self, node):
+        """Added curly braces to if/else if/else conditionals."""
         self.statement(node, 'if ', node.test, '{')
         self.body(node.body)
         self.newline(node)
@@ -502,11 +517,12 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.else_body(else_)
                 break
 
-    # Different implementations of for
     def visit_For(self, node):
+        """Translated several different implementations of for loops."""
         global var_Dict
         self.newline(node)
-        # If range, keys or values
+        
+        # If looping through range, keys or values
         if type(node.iter) == ast.Call:
             if type(node.iter.func) == ast.Attribute:
                 # Iterate the keys
@@ -522,7 +538,8 @@ class SourceGenerator(ExplicitNodeVisitor):
                 # If range has both start and end point
                 elif node.iter.func.id == 'range' and len(node.iter.args) == 2:
                     self.write('for(int ', node.target, ' = ', node.iter.args[0].n,'; ', node.target, ' < ', node.iter.args[1].n, '; ', node.target, '++){')
-        # If string or array 
+
+        # If looping through a string or array 
         elif type(node.iter) == ast.Name:
             var_name = node.iter.id
             if var_name in var_Dict.keys() and var_Dict[var_name] == 'String ':
@@ -533,7 +550,8 @@ class SourceGenerator(ExplicitNodeVisitor):
                 self.write('for(int i=0; i<', node.iter.id, '.size(); i++){')
                 self.newline(node)
                 self.write('\t\tObject ', node.target.id, ' = ', node.iter.id, '.get(i);')
-        # If iterating a list declared in the same for
+
+        # If iterating through a list declared in the same for loop
         elif type(node.iter) == ast.List:
           global numberOfLoopsCreated
           var_Dict.setdefault('tempList', 'ArrayList')
@@ -574,6 +592,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.write('}')
 
     def visit_While(self, node):
+        """Added curly braces and parentheses to while loops."""
         if hasattr(node.test, 'Compare'):
             self.statement(node, 'while ', node.test, '{')
         else:
@@ -593,8 +612,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.statement(node, 'pass')
 
     def visit_Print(self, node):
-        # XXX: python 2.6 only
-		# Modified to write 'system.out.println' instead of 'print'
+        """Modified to write 'system.out.println' instead of 'print'."""
         self.statement(node, "System.out.println(")
         values = node.values
         if node.dest is not None:
@@ -604,6 +622,9 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.write(");")
 
     def visit_Delete(self, node):
+        """Added a specific case for deleting a key-value pair from a
+        dictionary, which is translated as removing the pair from a HashMap.
+        """
         if 'Subscript' in repr(node.targets):
             var_name = node.targets[0].value.id
             self.newline()
@@ -651,6 +672,7 @@ class SourceGenerator(ExplicitNodeVisitor):
         self.statement(node, 'nonlocal ', ', '.join(node.names))
 
     def visit_Return(self, node):
+        """Modified to only print if a function is not void."""
         global returnsNone
         if not returnsNone:
             try:
@@ -687,12 +709,14 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.conditional_write(', ', node.inst)
             self.conditional_write(', ', node.tback)
 
-    # Expressions
-
     def visit_Attribute(self, node):
         self.write(node.value, '.', node.attr)
 
     def visit_Call(self, node):
+        """
+        Modified to translate dictionary methods keys(), values(), and len()
+        and list methods append(), insert(), and pop() to Java.
+        """
         global var_Dict
         want_comma = []
         def write_comma():
@@ -708,13 +732,14 @@ class SourceGenerator(ExplicitNodeVisitor):
             else:
                 want_comma.append(True)
 
+        # extract the name of the variable the function is called on
         if hasattr(node.func, 'value'):
             var_name = node.func.value.id   
         elif hasattr(node.func, 'id'):
             var_name = node.args[0].id
 
+        # check whether the function is called on a dictionary
         if var_name in var_Dict.keys() and var_Dict[var_name] == 'HashMap':
-            # self.write('Dictionary Method')
             if hasattr(node.func, 'value'):                    
                 if node.func.attr == 'keys':
                     var_meth = '.keySet()'
@@ -725,10 +750,11 @@ class SourceGenerator(ExplicitNodeVisitor):
                     var_meth = '.size()'
             self.write(var_name+ var_meth)
 
-
         else:
           self.write(var_name)
           self.write('.')
+
+          # check whether the function called is a list method
           if node.func.attr == 'append' or node.func.attr == 'insert':
             self.write('add')
           elif node.func.attr == 'pop':
@@ -751,14 +777,17 @@ class SourceGenerator(ExplicitNodeVisitor):
          
 		
     def visit_Name(self, node):
+        """Translates Python True and False to lowercase Java true and false."""
         if node.id == 'True' or node.id == 'False':
             self.write(node.id.lower())
         else:
             self.write(node.id)
 
-    # Change self.write(repr(node.s)) to the code below
-    # in order to get "" instead of ''
     def visit_Str(self, node):
+        """
+        Changed self.write(repr(node.s)) to the code below in order to get
+        double quotation marks such as "" instead of single such as ''.
+        """
         #to know if a variable was found into a string
         found = False
         #output of the string formatted with the variables inside it
@@ -818,10 +847,13 @@ class SourceGenerator(ExplicitNodeVisitor):
             self.write(key, ': ', value, ', ')
 
 
-    # Take @enclose('()') in order to have only one pair of parentheses
+    # Removed @enclose('()') in order to have only one pair of parentheses
     def visit_BinOp(self, node): 
-        # Must remember to handle % when used for mathematical expressions, not just string formatting
-        # TODO: if the left & right side are type Num, we want to be doing math; otherwise this 
+        """ Must remember to handle % when used for mathematical expressions,
+        not just string formatting.
+        TODO: if the left & right side are type Num, we want to be doing math;
+        otherwise we are doing string formatting.
+        """
         if (get_binop(node.op, ' %s ') == ' % '):
             node_type_left = type(node.left)
             node_type_right = type(node.left)
